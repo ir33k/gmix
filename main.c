@@ -3,12 +3,12 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
-
-/* For creating socket connection. */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #define PORT	"1965"		/* Default Gemini port */
 
@@ -27,6 +27,15 @@ die(char *fmt, ...)
 
 	fprintf(stderr, "\n");
 
+	exit(1);
+}
+
+void
+ssl_die(SSL_CTX *ctx)
+{
+	fprintf(stderr, "ERR: ssl: ");
+	ERR_print_errors_fp(stderr);
+	SSL_CTX_free(ctx);
 	exit(1);
 }
 
@@ -82,11 +91,59 @@ gmi_connect(char *url)
 int
 main(void)
 {
-	int     sfd;		/* Socket File Descriptor */
+	int        sfd;		/* Socket File Descriptor */
+	SSL_CTX   *ctx;
+	SSL       *ssl;
+	char       buf[BUFSIZ];
+	char      *bufp;
 
-	sfd = gmi_connect("gemini.circumlunar.space");
+	char *url = "gemini.circumlunar.space";
+
+	bufp = buf;
+	sfd = gmi_connect(url);
 
 	printf("Socket File Desciptor: %d\n", sfd);
 
+	/* On Debian libssl-doc package provides OpenSSL man pages. */
+
+	/* Init OpenSSL */
+	SSL_load_error_strings();
+	SSL_library_init();
+
+	/* SSL_CTX_set_options(sslctx, SSL_OP_SINGLE_DH_USE); */
+
+	if ((ctx = SSL_CTX_new(TLS_client_method())) == NULL)
+		ssl_die(ctx);
+
+	if ((ssl = SSL_new(ctx)) == NULL)
+		ssl_die(ctx);
+
+	SSL_set_fd(ssl, sfd);
+
+	if (SSL_connect(ssl) == -1)
+		ssl_die(ctx);
+
+	sprintf(buf, "gemini://%s/\r\n", url);
+	if ((SSL_write(ssl, bufp, sizeof(buf))) == 0)
+		ssl_die(ctx);
+
+	if ((SSL_read(ssl, bufp, 1024)) == 0)
+		ssl_die(ctx);
+
+	printf("buf 1: %s\n", buf);
+
+	if ((SSL_read(ssl, bufp, 256)) == 0)
+		ssl_die(ctx);
+
+	printf("buf 2: %s\n", buf);
+
+	if ((SSL_read(ssl, bufp, 256)) == 0)
+		ssl_die(ctx);
+
+	printf("buf 3: %s\n", buf);
+
+	SSL_CTX_free(ctx);
+
+	printf("FIRST TRY!!!\n");
 	return 0;
 }

@@ -5,4 +5,4 @@ set -xe
 # addrinfo struct of getaddrinfo.  Solution to problem was taken from
 # this disscussion:
 # https://bytes.com/topic/c/answers/811663-problems-using-getaddrinfo-friends-using-c99-standard
-cc -D_POSIX_C_SOURCE=200112L -Wall -Wextra -Wshadow -std=c89 -pedantic -o gemcli main.c
+cc -D_POSIX_C_SOURCE=200112L -Wall -Wextra -Wshadow -std=c89 -pedantic -o gemcli main.c -lssl -lcrypto
