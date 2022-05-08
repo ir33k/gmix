@@ -10,8 +10,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#define PORT	"1965"		/* Default Gemini port */
-
 void
 die(char *fmt, ...)
 {
@@ -39,73 +37,68 @@ ssl_die(SSL_CTX *ctx)
 	exit(1);
 }
 
-/* Open socket to Gemini capsule with given URL (without gemini://
- * protocol prefix). */
-int				/* Return Scoket File Descriptor */
-gmi_connect(char *url)
+/* Open TCP IP socket connection to HOST with PORT.  On succes return
+ * 0 and set SFD Socket File Descriptor.  If returned value is 1 then
+ * connection can't be established.  Any other value is getaddrinfo
+ * error code.
+ *
+ * Actually, according to man page, getaddrinfo returns any value
+ * different that 0 as error.  So it could by 1 in theory.  But after
+ * checking source code I found that all errors have negative values.
+ * I need to distinguish between getaddrinfo erros and connection
+ * error in single int value so I can print proper error message
+ * outside this function.  I dediced that value of 1 is connection
+ * error and all other are getaddrinfo errors. */
+int
+connect_tcp(char *host, char *port, int *sfd)
 {
-	int     sfd;		/* Socket file descriptor */
-	int     err;		/* For error code */
-
-	/* HINT hints getaddrinfo that given URL is for IP TCP socket
-	 * connection.  RES points at list of getaddrinfo results and
-	 * RP (Results Pointer) is used to iterate over them. */
+	int err;
 	struct addrinfo hint, *res, *rp;
 
-	memset(&hint, 0, sizeof(hint));	/* Init with 0 */
+	memset(&hint, 0, sizeof(hint));
 
-	/* Combination of AF_INET, SOCK_STREAM and ai_protocol (as 0,
-	 * because structure is init with 0) makes it IP TCP socket.
-	 * Read ip(7) and tcp(7) man pages for more information.
-	 * Other possible values are listed in socket(2) man page. */
-
-	hint.ai_family   = AF_INET;
+	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_STREAM;
 
-	/* TODO(irek): For now default Gemini protocol is used but
-	 * Gemini allows for protocol to be defined in URL so it can
-	 * be different for each connection. */
-
-	if ((err = getaddrinfo(url, PORT, &hint, &res)) != 0)
-		die("getaddrinfo: %s", gai_strerror(err));
+	if ((err = getaddrinfo(host, port, &hint, &res)) != 0)
+		return err;
 
 	for (rp = res; rp != NULL; rp = rp->ai_next) {
-		if ((sfd = socket(rp->ai_family,
-				  rp->ai_socktype,
-				  rp->ai_protocol)) == -1)
-			continue; /* Failure */
+		if ((*sfd = socket(rp->ai_family,
+				   rp->ai_socktype,
+				   rp->ai_protocol)) == -1)
+			continue;
 
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+		if (connect(*sfd, rp->ai_addr, rp->ai_addrlen) != -1)
 			break;	/* Success */
 
-		close(sfd);
+		close(*sfd);
 	}
-	freeaddrinfo(res);	/* No longer needed */
+	freeaddrinfo(res);
 
-	if (rp == NULL)
-		die("Can't connect to %s", url);
-
-	return sfd;
+	return rp == NULL ? 1 : 0;
 }
 
 int
 main(void)
 {
-	int        sfd;		/* Socket File Descriptor */
-	SSL_CTX   *ctx;
-	SSL       *ssl;
-	char       buf[BUFSIZ];
-	char      *bufp;
+	int       sfd;		/* Socket File Descriptor */
+	int       err;
+	char      buf[BUFSIZ];
+	char     *bp;
+	SSL_CTX  *ctx;
+	SSL      *ssl;
 
 	char *url = "gemini.circumlunar.space";
 
-	bufp = buf;
-	sfd = gmi_connect(url);
+	bp = buf;
 
-	printf("Socket File Desciptor: %d\n", sfd);
+	/* Hardcode default Gemini port for now */
+	if ((err = connect_tcp(url, "1965", &sfd)) != 0)
+		die("connect_tcp(%s:%s): %s", url, "1965",
+		    err == 1 ? "Can't connect" : gai_strerror(err));
 
 	/* On Debian libssl-doc package provides OpenSSL man pages. */
-
 	/* Init OpenSSL */
 	SSL_load_error_strings();
 	SSL_library_init();
@@ -124,20 +117,20 @@ main(void)
 		ssl_die(ctx);
 
 	sprintf(buf, "gemini://%s/\r\n", url);
-	if ((SSL_write(ssl, bufp, sizeof(buf))) == 0)
+	if ((SSL_write(ssl, bp, sizeof(buf))) == 0)
 		ssl_die(ctx);
 
-	if ((SSL_read(ssl, bufp, 1024)) == 0)
+	if ((SSL_read(ssl, bp, 1024)) == 0)
 		ssl_die(ctx);
 
 	printf("buf 1: %s\n", buf);
 
-	if ((SSL_read(ssl, bufp, 256)) == 0)
+	if ((SSL_read(ssl, bp, 256)) == 0)
 		ssl_die(ctx);
 
 	printf("buf 2: %s\n", buf);
 
-	if ((SSL_read(ssl, bufp, 256)) == 0)
+	if ((SSL_read(ssl, bp, 256)) == 0)
 		ssl_die(ctx);
 
 	printf("buf 3: %s\n", buf);
