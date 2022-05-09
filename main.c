@@ -8,8 +8,19 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <openssl/ssl.h>
-#include <openssl/err.h>
 
+#define IMPLEMENTATION
+#include "url.h"
+#undef IMPLEMENTATION
+
+/* Buffer Size should be at least 1024+6 bytes so it can hold whole
+ * response header (1029 B) and single URL (1024 B). */
+
+#define BSIZ	1024+6		/* Buffer size */
+
+/* Print message with given FMT format like in printf and exit program
+ * with error code 1.  If FMT string ends with ':' then after message
+ * print strerror of current errno code. */
 void
 die(char *fmt, ...)
 {
@@ -25,15 +36,6 @@ die(char *fmt, ...)
 
 	fprintf(stderr, "\n");
 
-	exit(1);
-}
-
-void
-ssl_die(SSL_CTX *ctx)
-{
-	fprintf(stderr, "ERR: ssl: ");
-	ERR_print_errors_fp(stderr);
-	SSL_CTX_free(ctx);
 	exit(1);
 }
 
@@ -79,63 +81,106 @@ connect_tcp(char *host, char *port, int *sfd)
 	return rp == NULL ? 1 : 0;
 }
 
-int
-main(void)
+/* Initialize OpenSSL.  Call this function before doing anything with
+ * SSL library.  Man pages are in libssl-doc (Debian). */
+void
+ssl_init()
 {
-	int       sfd;		/* Socket File Descriptor */
-	int       err;
-	char      buf[BUFSIZ];
-	char     *bp;
+	SSL_load_error_strings();
+	SSL_library_init();
+}
+
+/* Create TLS connection for SFC Socket File Descriptor connection.
+ * Return pointer to SSL on success, return NULL on failuere. */
+SSL *
+ssl_new(int sfd)
+{
 	SSL_CTX  *ctx;
 	SSL      *ssl;
 
-	char *url = "gemini.circumlunar.space";
+	if ((ctx = SSL_CTX_new(TLS_client_method())) == NULL)
+		return NULL;
+
+	if ((ssl = SSL_new(ctx)) == NULL) {
+		SSL_CTX_free(ctx);
+		return NULL;
+	}
+
+	SSL_CTX_free(ctx);
+	SSL_set_fd(ssl, sfd);
+
+	if (SSL_connect(ssl) == -1) {
+		SSL_free(ssl);
+		return NULL;
+	}
+
+	return ssl;
+}
+
+/* Shutdown given SSL connection and clear SSL memory. */
+void
+ssl_end(SSL *ssl)
+{
+	if (ssl != NULL) {
+		SSL_shutdown(ssl);
+		SSL_free(ssl);
+	}
+}
+
+int
+main(int argc, char **argv)
+{
+	int     sfd;		/* Socket File Descriptor */
+	int     err;		/* For error codes */
+	char    buf[BSIZ];	/* Buffer */
+	char   *bp;		/* Buffer Pointer */
+	Urlv    urlv;		/* URL View */
+	SSL    *ssl;		/* TLS connection */
+
+	if (argc < 2) {
+		printf("Usage: $ gmic url\n");
+		exit(1);
+	}
 
 	bp = buf;
 
-	/* Hardcode default Gemini port for now */
-	if ((err = connect_tcp(url, "1965", &sfd)) != 0)
-		die("connect_tcp(%s:%s): %s", url, "1965",
+	if (urlv_parse(argv[1], &urlv) != 0)
+		die("urlv_parse: Invalid url %s", argv[1]);
+
+	ssl_init();
+
+	if ((err = connect_tcp(urlv.host, urlv.port, &sfd)) != 0)
+		die("connect_tcp (%s:%s): %s", urlv.host, urlv.port,
 		    err == 1 ? "Can't connect" : gai_strerror(err));
 
-	/* On Debian libssl-doc package provides OpenSSL man pages. */
-	/* Init OpenSSL */
-	SSL_load_error_strings();
-	SSL_library_init();
+	urlv_sprint(bp, &urlv);
 
-	/* SSL_CTX_set_options(sslctx, SSL_OP_SINGLE_DH_USE); */
+	if ((ssl = ssl_new(sfd)) == NULL)
+		die("ssl_new: Can't connect to %s", bp);
 
-	if ((ctx = SSL_CTX_new(TLS_client_method())) == NULL)
-		ssl_die(ctx);
+	strcat(bp, "\r\n");
+	printf(">>> %s\n", bp);
 
-	if ((ssl = SSL_new(ctx)) == NULL)
-		ssl_die(ctx);
+	if ((SSL_write(ssl, bp, strlen(bp))) == 0) {
+		ssl_end(ssl);
+		die("SSL_write");
+	}
+	
+	if ((SSL_read(ssl, bp, BSIZ)) == 0) {
+		ssl_end(ssl);
+		die("SSL_read");
+	}
 
-	SSL_set_fd(ssl, sfd);
+	printf("buf 1: %s\n", bp);
 
-	if (SSL_connect(ssl) == -1)
-		ssl_die(ctx);
+	if ((SSL_read(ssl, bp, BSIZ)) == 0) {
+		ssl_end(ssl);
+		die("SSL_read");
+	}
 
-	sprintf(buf, "gemini://%s/\r\n", url);
-	if ((SSL_write(ssl, bp, sizeof(buf))) == 0)
-		ssl_die(ctx);
+	printf("buf 2: %s\n", bp);
 
-	if ((SSL_read(ssl, bp, 1024)) == 0)
-		ssl_die(ctx);
-
-	printf("buf 1: %s\n", buf);
-
-	if ((SSL_read(ssl, bp, 256)) == 0)
-		ssl_die(ctx);
-
-	printf("buf 2: %s\n", buf);
-
-	if ((SSL_read(ssl, bp, 256)) == 0)
-		ssl_die(ctx);
-
-	printf("buf 3: %s\n", buf);
-
-	SSL_CTX_free(ctx);
+	ssl_end(ssl);
 
 	printf("FIRST TRY!!!\n");
 	return 0;
