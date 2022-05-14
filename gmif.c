@@ -8,14 +8,12 @@
 /* Buffer size should be at least 1024+3 bytes so it can hold whole
  * URL (1024 B) with end \r\n chars and null-terminated char.. */
 
-#define BSIZ    (1024+3)	/* Buffer size */
+#define BSIZ     2048		/* Buffer size */
 #define PORT    "1965"		/* Default Gemini port */
 
 char *help =
-	"(GMI Fetch) Fetch Gemini server HOST:PORT with given URL.\n"
-	"\n"
-	"usage: %s URL HOST [PORT]\n"
-	"\n"
+	"(GMI Fetch) Fetch Gemini server HOST:PORT with given URL.\n\n"
+	"usage: %s URL HOST [PORT]\n\n"
 	"PORT is optional, defaults to 1965.  There's no URL parsing\n"
 	"or validation.  What you define as URL will be sent to server,\n"
 	"which is great for precise test of server response.  Output\n"
@@ -24,7 +22,7 @@ char *help =
 int
 main(int argc, char **argv)
 {
-	int     res;		/* Result of gmif_gets */
+	int     siz;		/* Size of data or error code */
 	char    buf[BSIZ];	/* Buffer for URL and output */
 	SSL    *ssl;		/* TLS connection */
 
@@ -39,8 +37,10 @@ main(int argc, char **argv)
 	if ((ssl = gmif_open(argv[2], argc > 3 ? argv[3] : PORT, buf)) == NULL)
 		die("Can't open connection");
 
-	while ((res = gmif_gets(ssl, buf, BSIZ)) > 0)
-		fprintf(stdout, "%s", buf);
+	while ((siz = gmif_gets(ssl, buf, BSIZ)) > 0)
+		fwrite(buf, 1, siz, stdout);
 
-	return res < 0;		/* Return 1 on error */
+	/* End program with error code 1 in case of negative size
+	 * which indicates error while reading response. */
+	return siz < 0;
 }

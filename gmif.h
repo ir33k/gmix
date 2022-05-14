@@ -72,7 +72,7 @@ SSL *gmif_open(char *host, char *port, char *url);
  * indicate the read process could be repeated.  On error, for either
  * end of response or other error, gmif_end is called.
  */
-int gmif_gets(SSL *ssl, char *buf, size_t siz);
+int gmif_gets(SSL *ssl, char *buf, int siz);
 
 /*
  * End SSL connection by shutting it down and freeing memory allocated
@@ -157,16 +157,13 @@ gmif_open(char *host, char *port, char *url)
 }
 
 int
-gmif_gets(SSL *ssl, char *buf, size_t siz)
+gmif_gets(SSL *ssl, char *buf, int siz)
 {
-	int     res;
+	int     res;		/* Buf size or err code */
 
-	/* BUF SIZ is reduced by -1 to make space for \0. */
-	if ((res = SSL_read(ssl, buf, siz-1)) <= 0) {
+	if ((res = SSL_read(ssl, buf, siz)) <= 0)
 		gmif_end(ssl);
-	} else {
-		buf[res] = '\0';
-	}
+
 	return res;
 }
 
