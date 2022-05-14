@@ -37,7 +37,7 @@ void fetch_init(void);
 /*
  * Open SSL connection to given HOST with PORT.  Make initial call to
  * server with URL string that has to end with \r\n characters.  There
- * is no validation or parsing of HST, PORT and URL.  Values must be
+ * is no validation or parsing of HOST, PORT and URL.  Values must be
  * correct in order to open connection.  On error return NULL,
  * otherwise return pointer to SSL connection.
  */
