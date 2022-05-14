@@ -5,4 +5,8 @@ set -xe
 # addrinfo struct of getaddrinfo.  Solution to problem was taken from
 # this disscussion:
 # https://bytes.com/topic/c/answers/811663-problems-using-getaddrinfo-friends-using-c99-standard
-cc -D_POSIX_C_SOURCE=200112L -Wall -Wextra -Wshadow -std=c89 -pedantic -o gmic main.c url.h -lssl -lcrypto
+FLAGS="-D_POSIX_C_SOURCE=200112L -Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
+LIBS="-lssl -lcrypto"
+
+cc $FLAGS -o gmif gmif.c util.h gmif.h $LIBS         # build gmif
+cc $FLAGS -o gmic main.c util.h gmif.h url.h $LIBS   # build gmic
