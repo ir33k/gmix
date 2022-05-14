@@ -1,9 +1,6 @@
 #include <stdio.h>
-
-#define IMPLEMENTATION
 #include "util.h"
-#include "gmif.h"
-#undef IMPLEMENTATION
+#include "fetch.h"
 
 /* Buffer size should be at least 1024+3 bytes so it can hold whole
  * URL (1024 B) with end \r\n chars and null-terminated char.. */
@@ -29,15 +26,15 @@ main(int argc, char **argv)
 	if (argc < 3)
 		die(help, argv[0]);
 
-	gmif_init();
+	fetch_init();
 
 	/* Build resource URL with suffix \r\n. */
 	sprintf(buf, "%s\r\n", argv[1]);
 
-	if ((ssl = gmif_open(argv[2], argc > 3 ? argv[3] : PORT, buf)) == NULL)
+	if ((ssl = fetch_open(argv[2], argc > 3 ? argv[3] : PORT, buf)) == NULL)
 		die("Can't open connection");
 
-	while ((siz = gmif_gets(ssl, buf, BSIZ)) > 0)
+	while ((siz = fetch_gets(ssl, buf, BSIZ)) > 0)
 		fwrite(buf, 1, siz, stdout);
 
 	/* End program with error code 1 in case of negative size

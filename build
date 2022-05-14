@@ -1,12 +1,16 @@
 #!/bin/sh
 set -xe
 
-# -D_POSIX_C_SOURCE=200112L flag is added because of problem with
-# addrinfo struct of getaddrinfo.  Solution to problem was taken from
-# this disscussion:
-# https://bytes.com/topic/c/answers/811663-problems-using-getaddrinfo-friends-using-c99-standard
-FLAGS="-D_POSIX_C_SOURCE=200112L -Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
-LIBS="-lssl -lcrypto"
+FLAGS=" -Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
+LIB_SSL="-lssl -lcrypto"
 
-cc $FLAGS -o gmif gmif.c util.h gmif.h $LIBS         # build gmif
-cc $FLAGS -o gmic main.c util.h gmif.h url.h $LIBS   # build gmic
+# Build object files
+cc $FLAGS -c util.c
+cc $FLAGS -c uri.c
+# -D_POSIX_C_SOURCE=200112L flag is added because of problem with
+# addrinfo struct of getaddrinfo.
+cc $FLAGS -D_POSIX_C_SOURCE=200112L -c fetch.c $LIB_SSL
+
+# Compile programs
+cc $FLAGS -o gmif gmif.c util.o fetch.o $LIB_SSL
+cc $FLAGS -o gmic main.c util.o uri.o fetch.o $LIB_SSL

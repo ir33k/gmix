@@ -1,51 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <stdarg.h>
-
-#define IMPLEMENTATION
 #include "util.h"
-#include "url.h"
-#include "gmif.h"
-#undef IMPLEMENTATION
+#include "uri.h"
+#include "fetch.h"
 
 /* Buffer Size should be at least 1024+6 bytes so it can hold whole
  * response header (1029 B) and single URL (1024 B). */
 
-#define BSIZ (1024+6)	/* Buffer size */
+#define BSIZ    (1024+6)	/* Buffer size */
 
 int
 main(int argc, char **argv)
 {
-	int     err;		/* Error code */
+	int     siz;		/* For size and error code */
 	char    buf[BSIZ];	/* Buffer */
-	char   *bp;		/* Buffer Pointer */
-	Urlv    urlv;		/* URL View */
+	Uri     uri;		/* URL View */
 	SSL    *ssl;		/* TLS connection */
 
-	if (argc < 2) {
-		printf("Usage: %s url\n", argv[0]);
-		exit(1);
-	}
+	if (argc < 2)
+		die("usage: %s url", argv[0]);
 
-	bp = buf;
+	if (uri_parse(argv[1], &uri) != 0)
+		die("uri_parse: Invalid url %s", argv[1]);
 
-	if (urlv_parse(argv[1], &urlv) != 0)
-		die("urlv_parse: Invalid url %s", argv[1]);
+	printf("uri.url     %s\n", uri.url);
+	printf("uri._buf    ");
+	fwrite(uri._buf, 1, strlen(uri.url), stdout);
+	printf("\n");
+	printf("uri.prot    %s\n", uri.prot);
+	printf("uri.host    %s\n", uri.host);
+	printf("uri.port    %s\n", uri.port);
+	printf("uri.path    %s\n", uri.path);
+	printf("uri.query   %s\n", uri.query);
 
-	gmif_init();
+	fetch_init();
 
-	urlv_sprint(bp, &urlv);
-	strcat(bp, "\r\n");
+	sprintf(buf, "%s\r\n", uri.url);
 
-	ssl = gmif_open(urlv.host, urlv.port, bp);
+	if ((ssl = fetch_open(uri.host, uri.port, buf)) == NULL)
+		die("Can't open connection");
 
-	while ((err = gmif_gets(ssl, bp, BSIZ)) > 0)
-		printf("%s", bp);
+	while ((siz = fetch_gets(ssl, buf, BSIZ)) > 0)
+		fwrite(buf, 1, siz, stdout);
 
-	printf("err: %d\n", err);
-
-	printf("FIRST TRY!!!\n");
-	return 0;
+	return siz < 0;		/* Return 1 on error */
 }

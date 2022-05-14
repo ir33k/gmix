@@ -2,8 +2,6 @@
 #define UTIL_H_
 
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
 
 /* Print message with given FMT format like in printf and exit program
  * with error code 1.  If FMT string ends with ':' then after message
@@ -11,26 +9,11 @@
  * stollen from Suckless "dwm" program source code. */
 void die(char *fmt, ...);
 
+/*
+ * In SRC string replace all occurrences of FROM string with TO string
+ * and save result in DEST string of MAX size.  All strings are
+ * null-terminated.  Return 0 on success, return <0 on error.
+ */
+int strnrep(char *src, char *from, char *to, char *dest, size_t max);
+
 #endif	/* UTIL_H_ */
-
-#ifdef IMPLEMENTATION
-
-void
-die(char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-
-	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
-		fputc(' ', stderr);
-		perror(NULL);
-	} else {
-		fputc('\n', stderr);
-	}
-	exit(1);
-}
-
-#endif	/* IMPLEMENTATION */
