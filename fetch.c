@@ -1,5 +1,5 @@
 /*
- * -D_POSIX_C_SOURCE=200112L flag in compiler or ths define below is
+ * -D_POSIX_C_SOURCE=200112L flag in compiler or this define below is
  * necessary to programs that include netdb.h because of problem with
  * addrinfo struct of getaddrinfo.
  */
@@ -81,16 +81,6 @@ fetch_open(char *host, char *port, char *url)
 	return ssl;
 }
 
-/*
- * Get response from SSL connection into BUF buffer of given SIZ size.
- * Response string is null-terminated.  Function can be called in loop
- * until return value is <=0.  Returned value is essentially returned
- * value of SSL_read.  That means on success it's value >0 being size
- * of read bytes.  On error it's <=0 where 0 means error because end
- * of response and values <0 are actual error codes that could
- * indicate the read process could be repeated.  On error, for either
- * end of response or other error, fetch_end is called.
- */
 int
 fetch_gets(SSL *ssl, char *buf, int siz)
 {

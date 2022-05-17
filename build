@@ -1,22 +1,22 @@
-#!/bin/sh
-set -xe
+#!/bin/sh -xe
 
-FLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
+CC="cc"
+CFLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
 LIBSSL="-lssl -lcrypto"
 
 # Build object files
-cc $FLAGS -c util.c
-cc $FLAGS -c str.c
-cc $FLAGS -c sb.c
-cc $FLAGS -c fetch.c
-cc $FLAGS -c uri.c
+$CC -c util.c   $CFLAGS
+$CC -c str.c	$CFLAGS
+$CC -c sb.c	$CFLAGS
+$CC -c uri.c	$CFLAGS
+$CC -c fetch.c	$CFLAGS
 
 # Compile and run tests
-cc $FLAGS -o str.test str.test.c  str.o                    && ./str.test
-cc $FLAGS -o  sb.test  sb.test.c   sb.o                    && ./sb.test
-cc $FLAGS -o uri.test uri.test.c  uri.o sb.o util.o str.o  && ./uri.test
+$CC -o sb.test sb.test.c   $CFLAGS sb.o                     && ./sb.test
+$CC -o str.test str.test.c  $CFLAGS str.o                    && ./str.test
+$CC -o uri.test uri.test.c  $CFLAGS uri.o sb.o util.o str.o  && ./uri.test
 
 # Compile programs
-cc $FLAGS -o gmiu gmiu.c  util.o uri.o sb.o str.o
-cc $FLAGS -o gmif gmif.c  util.o fetch.o                   $LIBSSL
-cc $FLAGS -o gmic gmic.c  util.o fetch.o sb.o uri.o str.o  $LIBSSL
+$CC -o gmiu gmiu.c  $CFLAGS util.o uri.o sb.o str.o
+$CC -o gmif gmif.c  $CFLAGS util.o fetch.o                   $LIBSSL
+$CC -o gmic gmic.c  $CFLAGS util.o uri.o sb.o str.o fetch.o  $LIBSSL

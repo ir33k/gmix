@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "util.h"
+#include "str.h"
 #include "sb.h"
 #include "uri.h"
 
@@ -54,25 +55,20 @@ uri_create(Uri *uri, char *prot, char *host, char *port,
 
 	sb_init(&sb, uri->_buf, URI_BSIZ);
 
-	if (uri->prot != NULL)
-		if ((uri->prot = sb_add(&sb, prot)) == NULL)
-			return -1;
+	if (prot != NULL && (uri->prot = sb_add(&sb, prot)) == NULL)
+		return -1;
 
-	if (uri->host != NULL)
-		if ((uri->host = sb_add(&sb, host)) == NULL)
-			return -1;
+	if (host != NULL && (uri->host = sb_add(&sb, host)) == NULL)
+		return -1;
 
-	if (uri->port != NULL)
-		if ((uri->port = sb_add(&sb, port)) == NULL)
-			return -1;
+	if (port != NULL && (uri->port = sb_add(&sb, port)) == NULL)
+		return -1;
 
-	if (uri->path != NULL)
-		if ((uri->path = sb_add(&sb, path)) == NULL)
-			return -1;
+	if (path != NULL && (uri->path = sb_add(&sb, path)) == NULL)
+		return -1;
 
-	if (uri->qstr != NULL)
-		if ((uri->qstr = sb_add(&sb, qstr)) == NULL)
-			return -1;
+	if (qstr != NULL && (uri->qstr = sb_add(&sb, qstr)) == NULL)
+		return -1;
 
 	if (uri__2url(uri, uri->url) != 0)
 		return -1;
@@ -103,7 +99,8 @@ uri_parse(Uri *uri, char *src)
 	 * propagate to later code and probably trigger errors while
 	 * establishing connection or sending message to server.*/
 
-	/* Find query string.  It's easier to do it backwards. */
+	/* Find query string.  It's easier to start searching for URI
+	 * parts from end of the BP string. */
         if ((found = strstr(bp, "?")) != NULL) {
 		if (strlen(found) > 1) {
 			uri->qstr = sb_add(&sb, found+1);
@@ -111,7 +108,7 @@ uri_parse(Uri *uri, char *src)
 		*found = '\0';	/* Cut off qstr from BP string */
 	}
 
-	/* Search for protocol and beggining of host. */
+	/* Find protocol. */
         if ((found = strstr(bp, "://")) == NULL) {
 		/* Use default protocol */
 		uri->prot = sb_addn(&sb, URI_PROT, strlen(URI_PROT));
@@ -120,8 +117,8 @@ uri_parse(Uri *uri, char *src)
 		bp = found + 3;
 	}
 
-	/* With protocol with his :// out the way we can go back to
-	 * searching backwards which is easier. */
+	/* Find path.  With protocol ahd his :// out the way we can go
+	 * back to searching backwards which is easier. */
         if ((found = strstr(bp, "/")) == NULL) {
 		/* Use default path */
 		uri->path = sb_addn(&sb, URI_PATH, strlen(URI_PATH));

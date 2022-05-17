@@ -27,8 +27,6 @@
 #ifndef URI_H_
 #define URI_H_
 
-#include "str.h"
-
 #define URI_MAX     1024	/* Gemini URI max length */
 #define URI_BSIZ   (URI_MAX+1)	/* Buffer size that can hold URI */
 #define URI_PROT   "gemini"	/* Gemini protocol without :// */
