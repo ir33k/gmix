@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+
 #include "util.h"
+#include "sb.h"
 #include "uri.h"
 
 int
@@ -9,65 +11,91 @@ uri__2url(Uri *uri, char *buf)
 	int     len;		/* Lenght of normalized URL */
 
 	len  = 0;
-	len += strlen(uri->prot);
-	len += 3;		/* For "://" */
-	len += strlen(uri->host);
-	len += 1;		/* For ":" */
-	len += strlen(uri->port);
-	len += strlen(uri->path);
+	buf[0] = '\0';
 
-	if (uri->query) {
-		len += 1;	/* For "?" */
-		len += strlen(uri->query);
+	if (uri->prot != NULL) {
+		len += strlen(uri->prot) + 3;
+		if (len > URI_MAX) return -1;
+		strcat(buf, uri->prot);
+		strcat(buf, "://");
 	}
-
-	if (len > URI_MAX)
-		return -1;
-
-	sprintf(buf, "%s://%s:%s%s",
-		uri->prot,
-		uri->host,
-		uri->port,
-		uri->path);
-
-	if (uri->query) {
+	if (uri->host != NULL) {
+		len += strlen(uri->host);
+		if (len > URI_MAX) return -1;
+		strcat(buf, uri->host);
+	}
+	if (uri->port != NULL) {
+		len += strlen(uri->port) + 1;
+		if (len > URI_MAX) return -1;
+		strcat(buf, ":");
+		strcat(buf, uri->port);
+	}
+	if (uri->path != NULL) {
+		len += strlen(uri->path);
+		if (len > URI_MAX) return -1;
+		strcat(buf, uri->path);
+	}
+	if (uri->qstr != NULL) {
+		len += strlen(uri->qstr) + 1;
+		if (len > URI_MAX) return -1;
 		strcat(buf, "?");
-		strcat(buf, uri->query);
+		strcat(buf, uri->qstr);
 	}
+	return 0;
+}
+
+int
+uri_create(Uri *uri, char *prot, char *host, char *port,
+	   char *path, char *qstr)
+{
+	Sb      sb;		/* Manipulate _buf with SB */
+
+	memset(uri, 0, sizeof(Uri));
+
+	sb_init(&sb, uri->_buf, URI_BSIZ);
+
+	if (uri->prot != NULL)
+		if ((uri->prot = sb_add(&sb, prot)) == NULL)
+			return -1;
+
+	if (uri->host != NULL)
+		if ((uri->host = sb_add(&sb, host)) == NULL)
+			return -1;
+
+	if (uri->port != NULL)
+		if ((uri->port = sb_add(&sb, port)) == NULL)
+			return -1;
+
+	if (uri->path != NULL)
+		if ((uri->path = sb_add(&sb, path)) == NULL)
+			return -1;
+
+	if (uri->qstr != NULL)
+		if ((uri->qstr = sb_add(&sb, qstr)) == NULL)
+			return -1;
+
+	if (uri__2url(uri, uri->url) != 0)
+		return -1;
 
 	return 0;
 }
 
 int
-uri_parse(char *str, Uri *uri)
+uri_parse(Uri *uri, char *src)
 {
-	size_t  len;		/* To track length */
-	char   *beg;		/* Beggining of searched string */
-	char   *end;		/* Ending of uri->_buf */
-	char   *bp;		/* Points at uri->_buf */
+	Sb      sb;		/* Manipulate _buf with SB */
+	char    buf[URI_BSIZ];	/* TMP buffer to avoid modifing SRC */
+	char   *bp;
+	char   *found;		/* Beggining of searched string */
+
+	bp = buf;
+
+	if (strnrep(src, " ", "%20", bp, URI_BSIZ) != 0)
+		return -1;	/* Too long after ' ' replacement */
 
 	memset(uri, 0, sizeof(Uri));
 
-	bp = uri->_buf;		/* Just for ease of use */
-
-	/*
-	 * Basic idea of this function is to put original STR into
-	 * internal uri->_buf buffer with potential spaces replaced
-	 * with "%20" string.  Internal buffer if used to store
-	 * strings for each URI component, and each one is separated
-	 * from another with \0 sign.  Pointers of Uri structure
-	 * points at each component in that internal buffer.  Then
-	 * internal buffer is scanned looking for each URI component
-	 * that was already present in original STR.  If component is
-	 * not found but has default value then default value is added
-	 * at the end of internal buffer.  At the end when all
-	 * components are defined then final uri->url is build.
-	 */
-
-	if (strnrep(str, " ", "%20", bp, URI_BSIZ) != 0)
-		return -1;	/* Too long after ' ' replacement */
-
-	len = strlen(bp);
+	sb_init(&sb, uri->_buf, URI_BSIZ);
 
 	/* TODO(irek): It looks like right now parsing can fail only
 	 * if URI in BUF is too long.  There are more cases when we
@@ -75,57 +103,45 @@ uri_parse(char *str, Uri *uri)
 	 * propagate to later code and probably trigger errors while
 	 * establishing connection or sending message to server.*/
 
-	/* Used later to add default values for protocol and port that
-	 * might be not present in URI because are not required but we
-	 * want to have defaults for ease of use.  +1 because we need
-	 * to keep null terminator. */
-	end = bp + len + 1;
+	/* Find query string.  It's easier to do it backwards. */
+        if ((found = strstr(bp, "?")) != NULL) {
+		if (strlen(found) > 1) {
+			uri->qstr = sb_add(&sb, found+1);
+		}
+		*found = '\0';	/* Cut off qstr from BP string */
+	}
 
 	/* Search for protocol and beggining of host. */
-        if ((beg = strstr(bp, "://")) == NULL) {
-		uri->host = bp;
-		/* Add default protocol. */
-		sprintf(end, "%s", URI_PROT);
-		uri->prot = end;
-		end += strlen(uri->prot) + 1;
+        if ((found = strstr(bp, "://")) == NULL) {
+		/* Use default protocol */
+		uri->prot = sb_addn(&sb, URI_PROT, strlen(URI_PROT));
 	} else {
-		uri->prot = bp;
-		bp = beg+3;
-		uri->host = bp;
-		*beg = '\0';
+		uri->prot = sb_addn(&sb, bp, found - bp);
+		bp = found + 3;
 	}
 
-	/* Search for port. */
-        if ((beg = strchr(bp, ':')) == NULL) {
-		/* Add default port. */
-		sprintf(end, "%s", URI_PORT);
-		uri->port = end;
-		end += strlen(uri->port) + 1;
+	/* With protocol with his :// out the way we can go back to
+	 * searching backwards which is easier. */
+        if ((found = strstr(bp, "/")) == NULL) {
+		/* Use default path */
+		uri->path = sb_addn(&sb, URI_PATH, strlen(URI_PATH));
 	} else {
-		*beg = '\0';
-		bp = beg+1;
-		uri->port = bp;
+		uri->path = sb_add(&sb, found);
+		*found = '\0';	/* Cut off path from BP string */
 	}
 
-	/* Search for path */
-        if ((beg = strchr(bp, '/')) == NULL) {
-		/* Add default path. */
-		sprintf(end, "%s", URI_PATH);
-		uri->path = end;
-		end += strlen(uri->path) + 1;
+	/* Find port. */
+        if ((found = strstr(bp, ":")) == NULL) {
+		/* Use default port */
+		uri->port = sb_addn(&sb, URI_PORT, strlen(URI_PORT));
 	} else {
-		*beg = '\0';
-		bp = beg+1;
-		uri->path = bp;
+		uri->port = sb_add(&sb, found+1);
+		*found = '\0';	/* Cut off port from BP string */
 	}
 
-	/* Search for query */
-        if ((beg = strchr(bp, '?')) == NULL) {
-		uri->query = NULL;
-	} else {
-		*beg = '\0';
-		bp = beg+1;
-		uri->query = bp;
+	/* What remainds is host. */
+	if (strlen(bp) > 0) {
+		uri->host = sb_add(&sb, bp);
 	}
 
 	if (uri__2url(uri, uri->url) != 0)

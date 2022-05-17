@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "util.h"
 #include "fetch.h"
 
@@ -10,7 +11,7 @@
 
 char *help =
 	"(GMI Fetch) Fetch Gemini server HOST:PORT with given URL.\n\n"
-	"usage: %s URL HOST [PORT]\n\n"
+	"usage: %s url host [port]\n\n"
 	"PORT is optional, defaults to 1965.  There's no URL parsing\n"
 	"or validation.  What you define as URL will be sent to server,\n"
 	"which is great for precise test of server response.  Output\n"

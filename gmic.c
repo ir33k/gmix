@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "util.h"
 #include "uri.h"
 #include "fetch.h"
@@ -20,7 +21,7 @@ main(int argc, char **argv)
 	if (argc < 2)
 		die("usage: %s url", argv[0]);
 
-	if (uri_parse(argv[1], &uri) != 0)
+	if (uri_parse(&uri, argv[1]) != 0)
 		die("uri_parse: Invalid url %s", argv[1]);
 
 	printf("uri.url     %s\n", uri.url);
@@ -31,7 +32,7 @@ main(int argc, char **argv)
 	printf("uri.host    %s\n", uri.host);
 	printf("uri.port    %s\n", uri.port);
 	printf("uri.path    %s\n", uri.path);
-	printf("uri.query   %s\n", uri.query);
+	printf("uri.query   %s\n", uri.qstr);
 
 	fetch_init();
 

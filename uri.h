@@ -27,8 +27,7 @@
 #ifndef URI_H_
 #define URI_H_
 
-#include <string.h>
-#include "util.h"
+#include "str.h"
 
 #define URI_MAX     1024	/* Gemini URI max length */
 #define URI_BSIZ   (URI_MAX+1)	/* Buffer size that can hold URI */
@@ -37,17 +36,17 @@
 #define URI_PATH   "/"		/* Gemini default root path */
 
 typedef struct {
-	char    url[URI_BSIZ];	/* Normalized URL */
-	char   _buf[URI_BSIZ];	/* Internal buffer for URI parts */
+	char     url[URI_BSIZ];	/* Normalized URL */
+	char    _buf[URI_BSIZ];	/* Private buffer for URI parts */
 	/*
 	 * So called parts or components of URI.  All are just
 	 * pointers to strings located in internal _buf buffer.
 	 */
-	char   *prot;		/* Protocol without "://" */
-	char   *host;		/* AKA domain */
-	char   *port;		/* Without prefix ":" */
-	char   *path;		/* Often empty as root path "/" */
-	char   *query;		/* Without leading "?" */
+	char    *prot;		/* Protocol without "://" */
+	char    *host;		/* AKA domain */
+	char    *port;		/* Without prefix ":" */
+	char    *path;		/* Often empty as root path "/" */
+	char    *qstr;		/* Query string without "?" prefix */
 } Uri;
 
 /*
@@ -58,8 +57,17 @@ typedef struct {
 int uri__2url(Uri *uri, char *buf);
 
 /*
- * Parse STR string to URI.  Return 0 on success, return <0 on error.
+ * Create URI from given parts.  All parts are optional and could be
+ * NULL.  Default values wihh NOT be used.  URI will be created exact
+ * passed values so keep in mind to not pass "://" in PROT, ":" in
+ * PORT and "?" in QSTR.  Return 0 on success.
  */
-int uri_parse(char *str, Uri *uri);
+int uri_create(Uri *uri, char *prot, char *host, char *port,
+	       char *path, char *qstr);
+
+/*
+ * Parse SRC string to URI.  Return 0 on success.
+ */
+int uri_parse(Uri *uri, char *src);
 
 #endif	/* URI_H_ */

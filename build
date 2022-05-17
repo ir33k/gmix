@@ -1,16 +1,22 @@
 #!/bin/sh
 set -xe
 
-FLAGS=" -Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
-LIB_SSL="-lssl -lcrypto"
+FLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
+LIBSSL="-lssl -lcrypto"
 
 # Build object files
 cc $FLAGS -c util.c
+cc $FLAGS -c str.c
+cc $FLAGS -c sb.c
+cc $FLAGS -c fetch.c
 cc $FLAGS -c uri.c
-# -D_POSIX_C_SOURCE=200112L flag is added because of problem with
-# addrinfo struct of getaddrinfo.
-cc $FLAGS -D_POSIX_C_SOURCE=200112L -c fetch.c $LIB_SSL
+
+# Compile and run tests
+cc $FLAGS -o str.test str.test.c  str.o                    && ./str.test
+cc $FLAGS -o  sb.test  sb.test.c   sb.o                    && ./sb.test
+cc $FLAGS -o uri.test uri.test.c  uri.o sb.o util.o str.o  && ./uri.test
 
 # Compile programs
-cc $FLAGS -o gmif gmif.c util.o fetch.o $LIB_SSL
-cc $FLAGS -o gmic main.c util.o uri.o fetch.o $LIB_SSL
+cc $FLAGS -o gmiu gmiu.c  util.o uri.o sb.o str.o
+cc $FLAGS -o gmif gmif.c  util.o fetch.o                   $LIBSSL
+cc $FLAGS -o gmic gmic.c  util.o fetch.o sb.o uri.o str.o  $LIBSSL
