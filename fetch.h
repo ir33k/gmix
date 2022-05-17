@@ -41,7 +41,7 @@ void fetch_init(void);
  * correct in order to open connection.  On error return NULL,
  * otherwise return pointer to SSL connection.
  */
-SSL *fetch_open(char *, char *, char *);
+SSL *fetch_open(char *host, char *port, char *url);
 
 /*
  * Get response from SSL connection into BUF buffer of given SIZ size.
@@ -53,7 +53,7 @@ SSL *fetch_open(char *, char *, char *);
  * indicate the read process could be repeated.  On error, for either
  * end of response or other error, fetch_end is called.
  */
-int fetch_gets(SSL *, char *, int);
+int fetch_gets(SSL *ssl, char *buf, int siz);
 
 /*
  * End SSL connection by shutting it down and freeing memory allocated
@@ -63,6 +63,6 @@ int fetch_gets(SSL *, char *, int);
  * this function by hand might be useful if you like to end SSL
  * connection in middle of operation for some reason.
  */
-void fetch_end(SSL *);
+void fetch_end(SSL *ssl);
 
 #endif	/* FETCH_H_ */
