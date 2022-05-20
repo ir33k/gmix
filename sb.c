@@ -11,7 +11,7 @@ sb_init(Sb *sb, char *buf, size_t max)
 	sb->_end = buf;
 }
 
-int
+size_t
 sb_siz(Sb *sb)
 {
 	return sb->_end - sb->_beg;

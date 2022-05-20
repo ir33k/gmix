@@ -30,7 +30,7 @@ void sb_init(Sb *sb, char *buf, size_t max);
 /*
  * Get size of currently occupied space in SB buffer.
  */
-int sb_siz(Sb *sb);
+size_t sb_siz(Sb *sb);
 
 /*
  * Add new SRC string of size SIZ to end of SB Strings Buffer.  Return
