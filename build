@@ -1,4 +1,4 @@
-#!/bin/sh -xe
+#!/bin/sh -e
 
 CC="cc"
 CFLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -pedantic -std=c89"
