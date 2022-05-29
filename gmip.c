@@ -31,13 +31,13 @@ main(int argc, char **argv)
 	while ((state = parse(state, buf, BSIZ, fp)) != PARSE_END) {
 		switch (state) {
 		case PARSE_END:
-			die("ERR: parse should be ended by while loop");
+			die("Parse should be ended by while loop");
 			break;
 		case PARSE_ERR:
-			die("ERR: parse returned error");
+			die("Parse returned error");
 			break;
 		case PARSE_BEG:
-			die("ERR: parse should not return PARSE_BEG");
+			die("Parse should not return PARSE_BEG");
 			break;
 		case PARSE_WIP:
 			goto just_print;

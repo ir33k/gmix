@@ -21,11 +21,12 @@ main(int argc, char **argv)
 
 	if (argc < 2) {
 		usage(argv[0]);
-		die("\nErr: Missing argument");
+		putchar('\n');
+		die("Missing argument");
 	}
 
 	if (uri_parse(&uri, argv[argc-1]) != 0)
-		die("Err: Parse failed");
+		die("Parse failed");
 
 	/* Print output for gmif program if -f option is provided. */
 	while ((opt = getopt(argc, argv, "f")) != -1) {

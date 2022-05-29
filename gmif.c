@@ -23,7 +23,8 @@ main(int argc, char **argv)
 
 	if (argc < 3) {
 		usage(argv[0]);
-		die("\nErr: Missing argument");
+		putchar('\n');
+		die("Missing argument");
 	}
 
 	fetch_init();
@@ -32,7 +33,7 @@ main(int argc, char **argv)
 	sprintf(buf, "%s\r\n", argv[1]);
 
 	if ((ssl = fetch_open(argv[2], argc > 3 ? argv[3] : PORT, buf)) == NULL)
-		die("Err: Can't open connection");
+		die("Can't open connection");
 
 	while ((siz = fetch_gets(ssl, buf, BSIZ)) > 0)
 		fwrite(buf, 1, siz, stdout);
