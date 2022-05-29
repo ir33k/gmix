@@ -3,29 +3,28 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-/* Line Types */
+#include <stdio.h>
+
+/* Parse state and Line Types */
 typedef enum {
-	LT_P = 0,		/* Regular text (paragraph) */
-	LT_H1,			/* Heading level 1 */
-	LT_H2,			/* Heading level 2 */
-	LT_H3,			/* Heading level 3 */
-	LT_BR,			/* New lines section */
-	LT_URI,			/* For links lines */
-	LT_LI,			/* Unordered list item */
-	LT_Q,			/* Quote */
-	LT_PRE,			/* Preformatted text */
-	LT_RES			/* Response header */
-} LT;
+	PARSE_ERR = -1,		/* Parse error */
+	PARSE_BEG = 0,		/* Beginning of parsing */
+	PARSE_WIP,		/* In the middle of the line */
+	PARSE_RES,		/* Response header */
+	PARSE_H1,		/* Heading level 1 */
+	PARSE_H2,		/* Heading level 2 */
+	PARSE_H3,		/* Heading level 3 */
+	PARSE_P,		/* Regular text (paragraph) */
+	PARSE_BR,		/* New lines section */
+	PARSE_URI,		/* For links lines */
+	PARSE_LI,		/* Unordered list item */
+	PARSE_Q,		/* Quote */
+	PARSE_OFF,		/* Disable formatting */
+	PARSE_NUL,		/* No formatting */
+	PARSE_ON,		/* Enable formatting */
+	PARSE_END		/* End of parsing */
+} PARSE;
 
-/*
- * Check whether given STR string line ends with new line char.
- */
-int parse__eol(char *str);
-
-/*
- * Take PREV previous Line Type and BUF buffer with at least first 4
- * line characters and determinate new Line Type.
- */
-LT parse__lt(LT prev, char *buf);
+PARSE parse(PARSE state, char *buf, size_t siz, FILE *fp);
 
 #endif	/* PARSE_H_ */

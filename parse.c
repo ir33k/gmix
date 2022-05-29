@@ -1,34 +1,41 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "parse.h"
 
-int
-parse__eol(char *str)
+PARSE
+parse(PARSE state, char *line, size_t siz, FILE *fp)
 {
-	return str[strlen(str)-1] == '\n';
-}
+	int     eol;		/* End Of Line, does line ends? */
 
-LT
-parse__lt(LT prev, char *buf)
-{
-	/* If previous Line type was a preformatted text ten all next
-	 * lines are should also be preformatted unless we find ending
-	 * line.  Then we treate it like empty line.  With that logic
-	 * you can find opening of preformatted text when previous LT
-	 * wasn't LT_PRE and now is, and closing of preformatted text
-	 * when previous LT was LT_PRE and now is LT_BR. */
-	if (prev == LT_PRE) {
-		return strncmp(buf, "```",  3) == 0 ? LT_BR : LT_PRE;
+	if (state == PARSE_END)
+		return PARSE_ERR;
+
+	/* Check if previous line ended.  Skip when parsing begun. */
+	eol = state == PARSE_BEG ? 1 : line[strlen(line)-1] == '\n';
+
+	if (fgets(line, siz, fp) == NULL)
+		return PARSE_END;
+
+	if (eol == 0)
+		return PARSE_WIP;
+
+	if (state == PARSE_NUL) {
+		if (strncmp(line, "```", 3) == 0)
+			return PARSE_ON;
+
+		return PARSE_NUL;
 	}
 
-	if (buf[0] == '\n') return LT_BR;
-	if (buf[0] == '>')  return LT_Q;
-	if (strncmp(buf, "# ",   2) == 0) return LT_H1;
-	if (strncmp(buf, "## ",  3) == 0) return LT_H2;
-	if (strncmp(buf, "### ", 4) == 0) return LT_H3;
-	if (strncmp(buf, "=> ",  3) == 0) return LT_URI;
-	if (strncmp(buf, "```",  3) == 0) return LT_PRE;
-	if (strncmp(buf, "* ",   2) == 0) return LT_LI;
+	if (state == PARSE_OFF)            return PARSE_NUL;
+	if (line[0] == '\n')               return PARSE_BR;
+	if (line[0] == '>')                return PARSE_Q;
+	if (strncmp(line, "# ",   2) == 0) return PARSE_H1;
+	if (strncmp(line, "## ",  3) == 0) return PARSE_H2;
+	if (strncmp(line, "### ", 4) == 0) return PARSE_H3;
+	if (strncmp(line, "=> ",  3) == 0) return PARSE_URI;
+	if (strncmp(line, "* ",   2) == 0) return PARSE_LI;
+	if (strncmp(line, "```",  3) == 0) return PARSE_OFF;
 
-	return LT_P;
+	return PARSE_P;
 }

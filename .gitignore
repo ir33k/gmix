@@ -1,6 +1,7 @@
 *~
 *.o
 *.test
+*.gmi
 gmiu
 gmif
 gmic

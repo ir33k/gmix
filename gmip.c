@@ -16,14 +16,11 @@ void usage(char *name);
 int
 main(int argc, char **argv)
 {
-	int     eol;		/* 0 when EOL not reached */
+	PARSE   state;		/* Parsing state */
 	char    buf[BSIZ];	/* For reading file */
-	LT	lt;		/* Line Type */
-	LT	prev;		/* Previous Line Type */
 	FILE   *fp;
 
-	eol = 1;		/* Indicate fresh line */
-	lt  = LT_P;		/* Init with 0 */
+	state = PARSE_BEG;
 	fp  = stdin;		/* Read from stdin by default */
 
 	if (argc > 1) {
@@ -31,58 +28,58 @@ main(int argc, char **argv)
 			die("fopen:");
 	}
 
-	/* TODO(irek): Skip first line ignoring response header for
-	 * now and focuse on parsing text/gemini content. */
-	while (fgets(buf, BSIZ, fp) != NULL && !parse__eol(buf));
-
-	while (fgets(buf, BSIZ, fp) != NULL) {
-		/* TODO(irek): Any idea how to do it elegantly without
-		 * goto?  If so then tell me plz. */
-		if (eol == 0)
-			goto just_print;
-
-		prev = lt;
-		lt = parse__lt(prev, buf);
-		
-		switch (lt) {
-		case LT_P:
-			printf("p");
+	while ((state = parse(state, buf, BSIZ, fp)) != PARSE_END) {
+		switch (state) {
+		case PARSE_END:
+			die("ERR: parse should be ended by while loop");
 			break;
-		case LT_H1:
+		case PARSE_ERR:
+			die("ERR: parse returned error");
+			break;
+		case PARSE_BEG:
+			die("ERR: parse should not return PARSE_BEG");
+			break;
+		case PARSE_WIP:
+			goto just_print;
+		case PARSE_RES:
+			printf("res");
+			break;
+		case PARSE_H1:
 			printf("h1");
 			break;
-		case LT_H2:
+		case PARSE_H2:
 			printf("h2");
 			break;
-		case LT_H3:
+		case PARSE_H3:
 			printf("h3");
 			break;
-		case LT_BR:
-			printf(prev == LT_PRE ? ")": "br");
+		case PARSE_P:
+			printf("p");
 			break;
-		case LT_URI:
+		case PARSE_BR:
+			printf("br");
+			break;
+		case PARSE_URI:
 			printf("url");
 			break;
-		case LT_LI:
+		case PARSE_LI:
 			printf("li");
 			break;
-		case LT_Q:
+		case PARSE_Q:
 			printf("quote");
 			break;
-		case LT_PRE:
-			printf(prev == LT_PRE ? "" : "(");
+		case PARSE_OFF:
+			printf("off");
 			break;
-		case LT_RES:
-			printf("header");
+		case PARSE_NUL:
+			break;
+		case PARSE_ON:
+			printf("on");
 			break;
 		}
 		putchar('\t');
 	just_print:
 		fputs(buf, stdout);
-		/* TODO(irek): Parser functions are still used with __
-		 * private notation because I wasn't planning on using
-		 * them outside lib at all.  I have to rethink it. */
-		eol = parse__eol(buf);
 	}
 
 	if (fp != stdin && fclose(fp) == EOF)

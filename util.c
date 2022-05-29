@@ -14,6 +14,8 @@ die(char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 
+	/* TODO(irek): Prepend each message with "ERR"? */
+
 	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
 		fputc(' ', stderr);
 		perror(NULL);
