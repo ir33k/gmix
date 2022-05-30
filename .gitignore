@@ -2,7 +2,9 @@
 *.o
 *.test
 *.gmi
+*.html
 gmiu
 gmif
 gmic
 gmip
+gmi2html

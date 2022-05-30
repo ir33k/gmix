@@ -18,8 +18,13 @@ $CC -o sb.test sb.test.c   $CFLAGS sb.o                    && ./sb.test
 $CC -o str.test str.test.c $CFLAGS str.o                   && ./str.test
 $CC -o uri.test uri.test.c $CFLAGS uri.o sb.o util.o str.o && ./uri.test
 
-# Compile programs
-$CC -o gmip gmip.c $CFLAGS util.o parse.o
+# Compile simple programs
 $CC -o gmiu gmiu.c $CFLAGS util.o uri.o sb.o str.o
-$CC -o gmif gmif.c $CFLAGS util.o fetch.o                  $LIBSSL
+$CC -o gmif gmif.c $CFLAGS util.o fetch.o $LIBSSL
+
+# Compile text/gemini parsers
+$CC -o gmip gmip.c $CFLAGS util.o parse.o
+$CC -o gmi2html gmi2html.c $CFLAGS util.o parse.o
+
+# Compile interactive Gemini client
 $CC -o gmic gmic.c $CFLAGS util.o uri.o sb.o str.o fetch.o $LIBSSL

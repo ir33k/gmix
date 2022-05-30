@@ -1,12 +1,9 @@
 GEMINI RELATED PROGRAMS
 
-In "gmix" repo name "gmi" stands for Gemini, and "x" is a placeholder
-for different letters because programs have names that starts with
-"gmi" and then end with letter corresponding with what program does.
-Like "gmif" stands for "Gemini Fetch", and "gmic" is "Gemini Client".
-
-Written in c89 for fun in NOT spare time instead of doing actual work
-AKA procrastination via programming.  Please, send help  X__x
+In "gmix" repo name "gmi" stands for Gemini, and "x" means that this
+is a family of programs.  Written in c89 for fun in NOT spare time
+instead of doing actual work AKA procrastination via programming.
+Please, send help  X__x
 
 Build all programs with script:
 
@@ -16,5 +13,12 @@ Run program without arguments to see usage instruction:
 
 	$ ./gmiu	# URL parser                          )/)
 	$ ./gmif	# Fetch URL                          (" )
-	$ ./gmic	# Client               WIP          ()()_*
-	$ ./gmip	# Parse text/gemini    WIP
+	$ ./gmic	# Client (interactive TUI)   WIP    ()()_*
+	$ ./gmip	# Parse text/gemini
+	$ ./gmi2html	# Parse text/gemini to HTML  WIP
+
+Example of using programs together by passing parsed URL to fetch
+program and piping result through Gemini text format parser.
+
+	$ ./gmif $(./gmiu -f tilde.pink) | ./gmip
+	$ ./gmif $(./gmiu -f rawtext.club) | ./gmi2html

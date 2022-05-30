@@ -24,3 +24,9 @@ die(char *fmt, ...)
 	}
 	exit(1);
 }
+
+int
+flagged(int list, int flag)
+{
+	return (list & flag) == flag;
+}
