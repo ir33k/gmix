@@ -3,7 +3,10 @@
 #include "util.h"
 #include "parse.h"
 
-#define BSIZ	256		/* Buffer size */
+/* Small buffer size is used to test how well parse.h deals with lines
+ * delivered in multiple parts. */
+
+#define BSIZ	8		/* Buffer size */
 
 /*
  * Print program usage instruction using provided progrm NAME.

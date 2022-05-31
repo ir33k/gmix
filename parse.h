@@ -45,6 +45,11 @@ char *parse_clean(PARSE state, char *str);
  * state of current BUF content.  State will contain one of "LINE
  * TYPE" flags and any number of "LINE INFO" flags.  Return PARSE_NUL
  * when parsing comes to the end.
+ *
+ * I believe that the smallest buffer LINE SIZ size possible is the
+ * longest markup prefix + end line + null which gives 6.  I don't
+ * know if there is any reason to go that low.  It's probably more
+ * efficient to use default BUFSIZ value.
  */
 PARSE parse(PARSE state, char *line, size_t siz, FILE *fp);
 

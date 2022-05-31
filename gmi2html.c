@@ -5,6 +5,11 @@
 #include "util.h"
 #include "parse.h"
 
+/* It's probably better to use default BUFSIZ value for buffer size
+ * which on modern machines is much higher but that would result in
+ * parsing each line as a whole and I wan't to do it in small parts to
+ * test parser capabilities and catch mistakes. */
+
 #define BSIZ    32		/* Buffer size */
 #define INDENT  "\t"		/* Indentation for HTML tags */
 
