@@ -30,16 +30,26 @@ main(int argc, char **argv)
 
 	while ((state = parse(state, buf, BSIZ, fp)) != PARSE_NUL) {
 		if (flagged(state, PARSE_BEG)) {
-			/**/ if (flagged(state, PARSE_H1))  printf("h1");
-			else if (flagged(state, PARSE_H2))  printf("h2");
-			else if (flagged(state, PARSE_H3))  printf("h3");
-			else if (flagged(state, PARSE_P))   printf("p");
-			else if (flagged(state, PARSE_BR))  printf("br");
-			else if (flagged(state, PARSE_URI)) printf("uri");
-			else if (flagged(state, PARSE_LI))  printf("li");
-			else if (flagged(state, PARSE_Q))   printf("quote");
-			else if (flagged(state, PARSE_PRE)) printf("pre");
-			else if (flagged(state, PARSE_RES)) printf("res");
+			/**/ if (flagged(state, PARSE_H1))
+				printf("h1");
+			else if (flagged(state, PARSE_H2))
+				printf("h2");
+			else if (flagged(state, PARSE_H3))
+				printf("h3");
+			else if (flagged(state, PARSE_P))
+				printf("p");
+			else if (flagged(state, PARSE_BR))
+				printf("br");
+			else if (flagged(state, PARSE_URI))
+				printf("uri");
+			else if (flagged(state, PARSE_LI))
+				printf("li");
+			else if (flagged(state, PARSE_Q))
+				printf("quote");
+			else if (flagged(state, PARSE_PRE))
+				printf("pre");
+			else if (flagged(state, PARSE_RES))
+				printf("res");
 
 			putchar('\t');
 		}

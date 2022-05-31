@@ -29,6 +29,8 @@ parse_clean(PARSE state, char *str)
 	if (flagged(state, PARSE_END)) {
 		len = strlen(str);
 
+		/* This condition should always be true when PARSE_END
+		 * flag is set but let's do it anyway. */
 		if (str[len-1] == '\n')
 			str[len-1] = '\0';
 	}
@@ -75,6 +77,13 @@ parse(PARSE state, char *line, size_t siz, FILE *fp)
 	if (flagged(res, PARSE_BEG) == 0)
 		return res;
 
+	/* TODO(irek): Missing PARSE_RES.  I'm not sure how to detect
+	 * header line properly.  For sure it could be only in first
+	 * line so when given STATE is PARSE_NUL but relaying on
+	 * header line starting with 2 digit number is to risky.  Any
+	 * first line on capsule page could start with 2 digit number.
+	 * There must be a better way. */
+
 	/**/ if (len == 1)                      res |= PARSE_BR;
 	else if (strncmp(line, "> ",   2) == 0) res |= PARSE_Q;
 	else if (strncmp(line, "# ",   2) == 0) res |= PARSE_H1;
@@ -84,7 +93,6 @@ parse(PARSE state, char *line, size_t siz, FILE *fp)
 	else if (strncmp(line, "* ",   2) == 0) res |= PARSE_LI;
 	else if (strncmp(line, "```",  3) == 0) res |= PARSE_PRE;
 	else                                    res |= PARSE_P;
-
 
 	return res;
 }

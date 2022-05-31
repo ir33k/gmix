@@ -20,5 +20,5 @@ Run program without arguments to see usage instruction:
 Example of using programs together by passing parsed URL to fetch
 program and piping result through Gemini text format parser.
 
-	$ ./gmif $(./gmiu -f tilde.pink) | ./gmip
+	$ ./gmif $(./gmiu -f tilde.pink)   | ./gmip
 	$ ./gmif $(./gmiu -f rawtext.club) | ./gmi2html
