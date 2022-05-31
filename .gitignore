@@ -1,6 +1,6 @@
 *~
 *.o
-*.test
+*.t
 *.gmi
 *.html
 gmiu

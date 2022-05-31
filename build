@@ -2,29 +2,30 @@
 
 CC="cc"
 CFLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -Wswitch-enum -pedantic -std=c89"
+CCF="$CC $CFLAGS"
 LIBSSL="-lssl -lcrypto"
 
 # Build object files
-$CC -c util.c  $CFLAGS
-$CC -c str.c   $CFLAGS
-$CC -c sb.c    $CFLAGS
-$CC -c uri.c   $CFLAGS
-$CC -c fetch.c $CFLAGS
-$CC -c res.c   $CFLAGS
-$CC -c parse.c $CFLAGS
+$CCF -c util.c
+$CCF -c str.c
+$CCF -c sb.c
+$CCF -c uri.c
+$CCF -c fetch.c
+$CCF -c res.c
+$CCF -c parse.c
 
 # Compile and run tests
-$CC -o sb.test sb.test.c   $CFLAGS sb.o                    && ./sb.test
-$CC -o str.test str.test.c $CFLAGS str.o                   && ./str.test
-$CC -o uri.test uri.test.c $CFLAGS uri.o sb.o util.o str.o && ./uri.test
+$CCF -o sb.t  sb.t.c           sb.o                       && ./sb.t
+$CCF -o str.t str.t.c          str.o                      && ./str.t
+$CCF -o uri.t uri.t.c          uri.o sb.o util.o str.o    && ./uri.t
 
 # Compile simple programs
-$CC -o gmiu gmiu.c $CFLAGS util.o uri.o sb.o str.o
-$CC -o gmif gmif.c $CFLAGS util.o fetch.o $LIBSSL
+$CCF -o gmiu gmiu.c            util.o uri.o sb.o str.o
+$CCF -o gmif gmif.c            util.o fetch.o $LIBSSL
 
 # Compile text/gemini parsers
-$CC -o gmip gmip.c $CFLAGS util.o parse.o
-$CC -o gmi2html gmi2html.c $CFLAGS util.o parse.o
+$CCF -o gmip     gmip.c        util.o parse.o
+$CCF -o gmi2html gmi2html.c    util.o parse.o
 
-# Compile interactive Gemini client
-$CC -o gmic gmic.c $CFLAGS util.o uri.o sb.o str.o fetch.o $LIBSSL
+# Compile interactive client
+$CCF -o gmic gmic.c            util.o uri.o sb.o str.o fetch.o $LIBSSL
