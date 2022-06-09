@@ -11,11 +11,11 @@ Build all programs with script:
 
 Run program without arguments to see usage instruction:
 
-	$ ./gmiu	# URL parser                          )/)
-	$ ./gmif	# Fetch URL                          (" )
-	$ ./gmic	# Client (interactive TUI)   WIP    ()()_*
-	$ ./gmip	# Parse text/gemini
-	$ ./gmi2html	# Parse text/gemini to HTML  WIP
+	$ ./gmiu	# URL parser
+	$ ./gmif	# Fetch URL
+	$ ./gmip	# Parse text/gemini			/)_/)
+	$ ./gmi2html	# Parse text/gemini to HTML  WIP       (-.- )
+	$ ./gmic	# Client (interactive TUI)   WIP     (")(")_o
 
 Example of using programs together by passing parsed URL to fetch
 program and piping result through Gemini text format parser.
