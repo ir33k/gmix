@@ -1,6 +1,6 @@
 /* Single header library for creating unit test programs.
  *
- * Can be used (included) only in one test program because it has on
+ * Can be used (included) only in one test program because it has
  * single global tests state, it defines it's own "main" function and
  * TEST macro relays on file line numbers.  You can define only 64
  * tests by default but this can be changed by predefined TESTMAX (see
@@ -54,6 +54,7 @@
 #define TESTMAX    64		/* Maximum number of tests */
 #endif
 
+/* Main TEST macro */
 #define TEST____(_msg, id, _line)                               \
 	void test__body##id(void);                              \
 	/* This function will be run before "main" function.  It's the
@@ -77,6 +78,7 @@
 
 /* TODO(irek): Create pending test macro.  Call it TODO? */
 
+/* Assertions */
 #define ASSERT____(bool, onfail, line) do {                     \
 		if (bool) break;            /* Pass */          \
 		test__.fail = 1;            /* Fail */          \
@@ -87,7 +89,6 @@
 		return;         /* Stop test on first fail */   \
 	} while(0)
 #define ASSERT__(bool, onfail) ASSERT____(bool, onfail, __LINE__)
-
 #define ASSERT(x,msg) ASSERT__(x, fputs(msg, stderr))
 #define OK(x)         ASSERT(x, "'"#x"' not ok (it's 0)")
 #define EQ(a,b)       ASSERT((a) == (b), "'"#a"' not equal to '"#b"'")
@@ -112,26 +113,11 @@ typedef struct {
 	int       fail;	               /* 1 when last test failed */
 } TestState;
 
-int  test_str_eq(char *a, char *b);
-int  test_buf_eq(char *a, char *b, size_t n);
-int  test__run(char *fname);
+int test_str_eq(char *a, char *b);
+int test_buf_eq(char *a, char *b, size_t n);
 
 extern TestState test__;         /* Global warning  ^u^  */
        TestState test__ = {0, NULL, {NULL}, {0}, {NULL}, 0};
-
-/* Check if given strings A and B are equal or both are NULL. */
-int
-test_str_eq(char *a, char *b)
-{
-	return (!a && !b) || (strcmp(a, b) == 0);
-}
-
-/* Check if given buffers A and B of size N are equal. */
-int
-test_buf_eq(char *a, char *b, size_t n)
-{
-	return strncmp(a, b, n) == 0;
-}
 
 /* Runs all tests defined with TEST macro.  Program returns number of
  * failed tests or 0 on success. */
@@ -167,6 +153,20 @@ main(void)
 	else     puts("ok\n");
 
 	return err;
+}
+
+/* Check if given strings A and B are equal or both are NULL. */
+int
+test_str_eq(char *a, char *b)
+{
+	return (!a && !b) || (strcmp(a, b) == 0);
+}
+
+/* Check if given buffers A and B of size N are equal. */
+int
+test_buf_eq(char *a, char *b, size_t n)
+{
+	return strncmp(a, b, n) == 0;
 }
 
 #endif	/* TEST_H_ */
