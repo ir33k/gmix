@@ -3,7 +3,7 @@
 
 #define BSIZ	64
 
-IT("strnrep")
+TEST("strnrep")
 {
 	char	buf[BSIZ];
 

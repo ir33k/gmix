@@ -3,20 +3,20 @@
 
 #define BSIZ    16
 
-IT("Initialize properly")
+TEST("Initialize properly")
 {
 	char     buf[BSIZ];
 	Sb	 sb;		/* Strings Buffer data structure */
 
 	sb_init(&sb, buf, BSIZ);
 
-	NUM_EQ(sb._beg, buf);
-	NUM_EQ(sb._end, buf);
-	NUM_EQ(sb._max, BSIZ);
-	NUM_EQ(sb_siz(&sb), 0);
+	EQ(sb._beg, buf);
+	EQ(sb._end, buf);
+	EQ(sb._max, BSIZ);
+	EQ(sb_siz(&sb), 0);
 }
 
-IT("Adds strings to SB as long as possible")
+TEST("Adds strings to SB as long as possible")
 {
 	char     buf[BSIZ];
 	Sb	 sb;
@@ -24,18 +24,18 @@ IT("Adds strings to SB as long as possible")
 
 	sb_init(&sb, buf, BSIZ);
 
-	NUM_EQ(str[0] = sb_add(&sb, "AAAA"), buf +  0);
-	NUM_EQ(str[1] = sb_add(&sb, "BBBB"), buf +  5);
-	NUM_EQ(str[2] = sb_add(&sb, "CCCC"), buf + 10);
-	NUM_EQ(str[3] = sb_add(&sb, "D"), NULL);
-	NUM_EQ(sb_siz(&sb), 15);
+	EQ(str[0] = sb_add(&sb, "AAAA"), buf +  0);
+	EQ(str[1] = sb_add(&sb, "BBBB"), buf +  5);
+	EQ(str[2] = sb_add(&sb, "CCCC"), buf + 10);
+	EQ(str[3] = sb_add(&sb, "D"), NULL);
+	EQ(sb_siz(&sb), 15);
 	STR_EQ(str[0], "AAAA");
 	STR_EQ(str[1], "BBBB");
 	STR_EQ(str[2], "CCCC");
 	STR_EQ(str[3], NULL);
 }
 
-IT("Adds strings to SB after clear")
+TEST("Adds strings to SB after clear")
 {
 	char     buf[BSIZ];
 	Sb	 sb;
@@ -47,13 +47,13 @@ IT("Adds strings to SB after clear")
 	sb_add(&sb, "CCCC");
 	sb_clear(&sb);
 
-	NUM_EQ(sb_siz(&sb), 0);
-	NUM_EQ(sb._beg, sb._end);
+	EQ(sb_siz(&sb), 0);
+	EQ(sb._beg, sb._end);
 
-	NUM_EQ(str = sb_add(&sb, "AAAA"), buf);
+	EQ(str = sb_add(&sb, "AAAA"), buf);
 	STR_EQ(str, "AAAA");
-	NUM_EQ(sb_siz(&sb), 5);
+	EQ(sb_siz(&sb), 5);
 }
 
 /* TODO(irek): Test sb_addn function. */
-IT("Adds strings of given length") {}
+TEST("Adds strings of given length") {}

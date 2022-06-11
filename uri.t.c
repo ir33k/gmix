@@ -4,7 +4,7 @@
 #include "util.h"
 #include "uri.h"
 
-IT("Should parse valid uri")
+TEST("Should parse valid uri")
 {
 	Uri	uri;
 
