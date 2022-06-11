@@ -3,9 +3,9 @@
  * Can be used (included) only in one test program because it has on
  * single global tests state, it defines it's own "main" function and
  * TEST macro relays on file line numbers.  You can define only 64
- * tests by default but this can be changed by predefining TESTMAX
- * (see example).  Variables, functions and macros not mentioned in
- * example test program should not be used.
+ * tests by default but this can be changed by predefined TESTMAX (see
+ * example).  Variables, functions and macros not mentioned in example
+ * test program should not be used.
  *
  * Example test program:
  *
@@ -13,9 +13,9 @@
  *	#define TESTMAX 32              // Define to handle more tests
  *	#include "test.h"               // Get test lib
  *
- *	TEST("Should pass")             // Define test with test cases
+ *	TEST("Should pass")             // Define test with assertions
  *	{
- *		// Defined test will end on first failing test case
+ *		// Defined test will end on first failing assertion
  *		OK(bool);               // Is boolean true?
  *		EQ(num1, num2);         // Are numbers equal?
  *		STR_EQ(s1, s2);         // Are strings equal?
@@ -70,7 +70,7 @@
 		test__.all++;                                   \
 	}                                                       \
 	void test__body##id(void)
-/* Intermidiate macro function TEST__ is necessary to "unwrap"
+/* Intermediate macro function TEST__ is necessary to "unwrap"
  * __LINE__ macro so it could be used as a ID string. */
 #define TEST__(msg, id) TEST____(msg, id, __LINE__)
 #define TEST(msg) TEST__(msg, __LINE__)
