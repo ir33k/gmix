@@ -80,7 +80,8 @@
 #define ASSERT____(bool, onfail, line) do {                     \
 		test__.fail = 0;                                \
 		if (bool) break;                                \
-		fprintf(stderr, "%s:%d: ", test__.fname, line); \
+		fprintf(stderr, "\n%s:%d: error: ",             \
+			test__.fname, line);                    \
 		onfail;                                         \
 		putchar('\n');                                  \
 		test__.fail = 1;                                \
@@ -89,8 +90,8 @@
 #define ASSERT__(bool, onfail) ASSERT____(bool, onfail, __LINE__)
 
 #define ASSERT(x,msg) ASSERT__(x, fprintf(stderr, "%s", msg))
-#define OK(x)         ASSERT(x, "'"#x"' is not ok (it's 0)")
-#define NUM_EQ(a,b)   ASSERT((a) == (b), "'"#a"' != '"#b"'")
+#define OK(x)         ASSERT(x, "'"#x"' not ok (it's 0)")
+#define NUM_EQ(a,b)   ASSERT((a) == (b), "'"#a"' not equal to '"#b"'")
 #define FAIL(msg)     ASSERT(0, msg)
 #define STR_EQ(a,b)   ASSERT__(test_str_eq(a, b),                       \
 			       fprintf(stderr,                          \
@@ -160,9 +161,10 @@ test__run(char *fname)
 		(*test__.its[i])();
 		if (test__.fail) {
 			err++;
-			fprintf(stderr, "%s:%lu: error: %s\n",
+			fprintf(stderr, "%s:%lu: error: failed test: '%s'\n",
 				fname, test__.line[i], test__.msg[i]);
 			assert(err <= test__.all);
+			test__.fail = 0;
 		}
 	}
 
