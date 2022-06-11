@@ -15,9 +15,9 @@ $CCF -c res.c
 $CCF -c parse.c
 
 # Compile and run tests
-$CCF -o sb.t  sb.t.c           sb.o                       && ./sb.t
-$CCF -o str.t str.t.c          str.o                      && ./str.t
-$CCF -o uri.t uri.t.c          uri.o sb.o util.o str.o    && ./uri.t
+$CCF -o sb.t  sb.t.c           sb.o                && ./sb.t
+$CCF -o str.t str.t.c          str.o               && ./str.t
+$CCF -o uri.t uri.t.c          uri.o sb.o str.o    && ./uri.t
 
 # Compile simple programs
 $CCF -o gmiu gmiu.c            util.o uri.o sb.o str.o

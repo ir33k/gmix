@@ -10,7 +10,7 @@ die(char *fmt, ...)
 {
 	va_list ap;
 
-	printf("ERR: ");
+	fprintf(stderr, "ERR: ");
 
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);

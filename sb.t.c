@@ -1,49 +1,68 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "test.h"
 #include "sb.h"
 
-void test(char *buf, size_t bsiz);
+#define BSIZ    16
+
+IT("Initialize properly")
+{
+	char     buf[BSIZ];
+	Sb	 sb;		/* Strings Buffer data structure */
+
+	sb_init(&sb, buf, BSIZ);
+
+	NUM_EQ(sb._beg, buf);
+	NUM_EQ(sb._end, buf);
+	NUM_EQ(sb._max, BSIZ);
+	NUM_EQ(sb_siz(&sb), 0);
+}
+
+IT("Adds strings to SB as long as possible")
+{
+	char     buf[BSIZ];
+	Sb	 sb;
+	char	*str[4];	/* Pointers for strings in BUF */
+
+	sb_init(&sb, buf, BSIZ);
+
+	NUM_EQ(str[0] = sb_add(&sb, "AAAA"), buf +  0);
+	NUM_EQ(str[1] = sb_add(&sb, "BBBB"), buf +  5);
+	NUM_EQ(str[2] = sb_add(&sb, "CCCC"), buf + 10);
+	NUM_EQ(str[3] = sb_add(&sb, "D"), NULL);
+	NUM_EQ(sb_siz(&sb), 15);
+	STR_EQ(str[0], "AAAA");
+	STR_EQ(str[1], "BBBB");
+	STR_EQ(str[2], "CCCC");
+	STR_EQ(str[3], NULL);
+}
+
+IT("Adds strings to SB after clear")
+{
+	char     buf[BSIZ];
+	Sb	 sb;
+	char	*str;		/* Pointers for string in BUF */
+
+	sb_init(&sb, buf, BSIZ);
+	sb_add(&sb, "AAAA");
+	sb_add(&sb, "BBBB");
+	sb_add(&sb, "CCCC");
+	sb_clear(&sb);
+
+	NUM_EQ(sb_siz(&sb), 0);
+	NUM_EQ(sb._beg, sb._end);
+
+	NUM_EQ(str = sb_add(&sb, "AAAA"), buf);
+	STR_EQ(str, "AAAA");
+	NUM_EQ(sb_siz(&sb), 5);
+}
+
+/* TODO(irek): Test sb_addn function. */
+IT("Adds strings of given length") {}
 
 int
 main(void)
 {
-	char	 buf1[16];	/* Buffer for SB */
-	char	 buf2[16];	/* Buffer for SB */
-
-	test(buf1, 16);
-
-	/* Test how SB buffer behaves if given buffer has some old
-	 * values.  It should act like it was empty all along. */
-	sprintf(buf2, "xxxxxxxxxxxxxxx");
-	test(buf2, 16);
-
-	return 0;
-}
-
-void
-test(char *buf, size_t bsiz)
-{
-	Sb	 sb;		/* Strings Buffer data structure */
-	char	*str[4];	/* Pointers for strings in BUF */
-
-	sb_init(&sb, buf, bsiz);
-
-	assert(sb._beg == buf);
-	assert(sb._end == buf);
-	assert(sb._max == bsiz);
-	assert(sb_siz(&sb) == 0);
-
-	assert((str[0] = sb_add(&sb, "AAAA")) == buf +  0);
-	assert((str[1] = sb_add(&sb, "BBBB")) == buf +  5);
-	assert((str[2] = sb_add(&sb, "CCCC")) == buf + 10);
-	assert((str[3] = sb_add(&sb, "D"))    == NULL);
-	assert(sb_siz(&sb) == 15);
-
-	sb_clear(&sb);
-	assert(sb_siz(&sb) == 0);
-	assert(sb._beg == sb._end);
-
-	assert((str[0] = sb_addn(&sb, "AAAAAA", 4)) == buf + 0);
-	assert(sb_siz(&sb) == 5);
+	return TEST();
 }
