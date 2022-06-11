@@ -5,7 +5,7 @@
  * define only 64 tests by default.  Predefining TESTMAX value before
  * "test.h" is included to change that.  Variables, functions and
  * macros not mentioned in usage example should not be used.
- * 
+ *
  * Usage example:
  *
  *	// program.t.c                  // "program" test file
@@ -55,7 +55,7 @@
 #define TESTMAX    64		/* Maximum number of tests */
 #endif
 
-#define IT__(_msg, id, l)                                       \
+#define IT____(_msg, id, l)                                     \
 	void test__body##id(void);                              \
 	/* This function will be run before "main" function.  It's the
 	 * heart, main hack, my own precious ring of power that makes
@@ -63,47 +63,45 @@
 	void test__##id(void) __attribute__ ((constructor));    \
 	void test__##id(void) {                                 \
 		test__.msg[test__.all] = _msg;                  \
-	        test__.line[test__.all] = l;                    \
-	        test__.its[test__.all] = &test__body##id;       \
-	        test__.all++;                                   \
+		test__.line[test__.all] = l;                    \
+		test__.its[test__.all] = &test__body##id;       \
+		test__.all++;                                   \
 	}                                                       \
 	void test__body##id(void)
 /* Wrapper for IT__ macro because if __LINE__ is passed directly it
  * can't be concatenated with ## and used as ID.  But passing those
  * values through another macro function without doing anything
  * "unwraps" value making it possible to use it like text. */
-#define IT____(msg, id) IT__(msg, id, __LINE__)
-#define IT(msg) IT____(msg, __LINE__)
+#define IT__(msg, id) IT____(msg, id, __LINE__)
+#define IT(msg) IT__(msg, __LINE__)
 
 /* TODO(irek): Create pending test macro.  Call it TODO? */
 
-#define ASSERT__(x, msg, line) do {             \
-		test__.fail = 0;                \
-		if (x) break;                   \
-		test__err(line, msg);           \
-		test__.fail = 1;                \
-		return;                         \
+#define ASSERT____(bool, onfail, line) do {                     \
+		test__.fail = 0;                                \
+		if (bool) break;                                \
+		fprintf(stderr, "%s:%d: ", test__.fname, line); \
+		onfail;                                         \
+		putchar('\n');                                  \
+		test__.fail = 1;                                \
+		return;         /* Stop test on first fail */   \
 	} while(0)
+#define ASSERT__(bool, onfail) ASSERT____(bool, onfail, __LINE__)
 
-#define STR_EQ__(a, b, line) do {					\
-		test__.fail = 0;					\
-		if (test_str_eq(a, b)) break;				\
-		fprintf(stderr,						\
-			"%s:%d: strings not equal:\n\t%s\n\t%s\n",	\
-			test__.fname, line,				\
-			a ? a : "<NULL>",				\
-			b ? b : "<NULL>");				\
-		test__.fail = 1;					\
-		return;							\
-	} while(0)
-
-#define ASSERT(x,msg) ASSERT__(x, msg, __LINE__)
+#define ASSERT(x,msg) ASSERT__(x, fprintf(stderr, "%s", msg))
 #define OK(x)         ASSERT(x, "'"#x"' is not ok (it's 0)")
 #define NUM_EQ(a,b)   ASSERT((a) == (b), "'"#a"' != '"#b"'")
-#define STR_EQ(a,b)   STR_EQ__(a, b, __LINE__)
-#define BUF_EQ(a,b,n) ASSERT(test_buf_eq(a,b,n), "buffers not equal")
 #define FAIL(msg)     ASSERT(0, msg)
-#define PASS()        do { test__.fail = 0; return; } while(0)
+#define STR_EQ(a,b)   ASSERT__(test_str_eq(a, b),                       \
+			       fprintf(stderr,                          \
+				       "not equal:\n\t'%s'\n\t'%s'",    \
+				       a ? a : "<NULL>",                \
+				       b ? b : "<NULL>"))
+#define BUF_EQ(a,b,n) ASSERT__(test_buf_eq(a,b,n),                      \
+			       fprintf(stderr,                          \
+				       "not equal:\n\t'%-*s'\n\t'%-*s'",\
+				       n, a, n, b))
+#define PASS() do { test__.fail = 0; return; } while(0)
 
 /* Runs all tests defined with IT macro. */
 #define TEST() test__run(__FILE__)
@@ -119,7 +117,6 @@ typedef struct {
 
 int  test_str_eq(char *a, char *b);
 int  test_buf_eq(char *a, char *b, size_t n);
-void test__err(size_t line, char *msg);
 int  test__run(char *fname);
 
 extern TestState test__;	/* Global warning  ^u^  */
@@ -137,15 +134,6 @@ int
 test_buf_eq(char *a, char *b, size_t n)
 {
 	return strncmp(a, b, n) == 0;
-}
-
-/* Print error MSG message to stderr in format of compile errors.
- * Starting with file name taken from global state test__.fname and
- * given LINE number. */
-void
-test__err(size_t line, char *msg)
-{
-	fprintf(stderr, "%s:%lu: %s\n", test__.fname, line, msg);
 }
 
 /* Run all tests defined with IT macro for given FNAME file name.
