@@ -6,9 +6,9 @@
  * "test.h" is included to change that.  Variables, functions and
  * macros not mentioned in usage example should not be used.
  *
- * Usage example:
+ * Usage test program:
  *
- *	// program.t.c                  // "program" test file
+ *	// file: program.t.c
  *	#define TESTMAX 32              // Define to handle more tests
  *	#include "test.h"               // Get test lib
  *
@@ -32,13 +32,11 @@
  *	IT("Another test 1") { ... }    // Define as many as TESTMAX
  *	IT("Another test 2") { ... }
  *
- *	int main(void)
- *	{
- *		return TEST();          // Run.  Return fails count.
- *	}
+ *	// Note that there is not "main" function
  *
- *	// Compile and run "program" tests with:
- *	// $ cc -o program.t program.t.c && ./program.t
+ * Compile and run "program" tests with:
+ * 
+ *	$ cc -o program.t program.t.c && ./program.t
  */
 #ifdef TEST_H_
 /* Error for those who don't read documentation and/or comments. */
@@ -104,9 +102,6 @@
 				       n, a, n, b))
 #define PASS() do { test__.fail = 0; return; } while(0)
 
-/* Runs all tests defined with IT macro. */
-#define TEST() test__run(__FILE__)
-
 typedef struct {
 	size_t    all;		       /* Number of all tests */
 	char     *fname;	       /* Test file name */
@@ -137,18 +132,17 @@ test_buf_eq(char *a, char *b, size_t n)
 	return strncmp(a, b, n) == 0;
 }
 
-/* Run all tests defined with IT macro for given FNAME file name.
- * Print tests result with details about failing tests.  Return number
- * of failed tests or 0 on success. */
+/* Runs all tests defined with IT macro.  Program returns number of
+ * failed tests or 0 on success. */
 int
-test__run(char *fname)
+main(void)
 {
 	size_t i, err = 0;	/* ERR to count failed tests */
 
-	test__.fname = fname;
+	test__.fname = __FILE__;
 
 	if (test__.all == 0) {
-		fprintf(stderr, "No tests in '%s'\n", fname);
+		fprintf(stderr, "No tests in '%s'\n", test__.fname);
 		exit(1);
 	}
 	if (test__.all > TESTMAX) {
@@ -162,14 +156,14 @@ test__run(char *fname)
 		if (test__.fail) {
 			err++;
 			fprintf(stderr, "%s:%lu: error: failed test: '%s'\n",
-				fname, test__.line[i], test__.msg[i]);
+				test__.fname, test__.line[i], test__.msg[i]);
 			assert(err <= test__.all);
 			test__.fail = 0;
 		}
 	}
 
 	/* Print result */
-	printf("TEST:\t%10s\t%.2lu tests\t", fname, test__.all);
+	printf("TEST:\t%10s\t%.2lu tests\t", test__.fname, test__.all);
 
 	if (err) printf("%.2lu FAILED\n", err);
 	else     printf("ok\n");

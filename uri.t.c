@@ -1,8 +1,5 @@
 /* Test uri.h */
 
-#include <assert.h>
-#include <string.h>
-
 #include "test.h"
 #include "util.h"
 #include "uri.h"
@@ -202,10 +199,4 @@ IT("Should parse valid uri")
 	STR_EQ(uri.port, "1965");
 	STR_EQ(uri.path, "/");
 	STR_EQ(uri.qstr, "some%20query");
-}
-
-int
-main(void)
-{
-	return TEST();
 }

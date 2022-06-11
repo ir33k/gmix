@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <assert.h>
-
 #include "test.h"
 #include "sb.h"
 
@@ -60,9 +57,3 @@ IT("Adds strings to SB after clear")
 
 /* TODO(irek): Test sb_addn function. */
 IT("Adds strings of given length") {}
-
-int
-main(void)
-{
-	return TEST();
-}
