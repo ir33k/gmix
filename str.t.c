@@ -1,4 +1,4 @@
-#include "test.h"
+#include "walter.h"
 #include "str.h"
 
 #define BSIZ	64

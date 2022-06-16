@@ -1,7 +1,4 @@
-/* Test uri.h */
-
-#include "test.h"
-#include "util.h"
+#include "walter.h"
 #include "uri.h"
 
 TEST("Should parse valid uri")

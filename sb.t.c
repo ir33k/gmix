@@ -1,4 +1,4 @@
-#include "test.h"
+#include "walter.h"
 #include "sb.h"
 
 #define BSIZ    16
@@ -55,5 +55,4 @@ TEST("Adds strings to SB after clear")
 	EQ(sb_siz(&sb), 5);
 }
 
-/* TODO(irek): Test sb_addn function. */
-TEST("Adds strings of given length") {}
+TODO("Adds strings of given length") {}
