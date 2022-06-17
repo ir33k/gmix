@@ -10,10 +10,10 @@ TEST("Initialize properly")
 
 	sb_init(&sb, buf, BSIZ);
 
-	EQ(sb._beg, buf);
-	EQ(sb._end, buf);
-	EQ(sb._max, BSIZ);
-	EQ(sb_siz(&sb), 0);
+	OK(sb._beg == buf);
+	OK(sb._end == buf);
+	OK(sb._max == BSIZ);
+	OK(sb_siz(&sb) == 0);
 }
 
 TEST("Adds strings to SB as long as possible")
@@ -24,11 +24,11 @@ TEST("Adds strings to SB as long as possible")
 
 	sb_init(&sb, buf, BSIZ);
 
-	EQ(str[0] = sb_add(&sb, "AAAA"), buf +  0);
-	EQ(str[1] = sb_add(&sb, "BBBB"), buf +  5);
-	EQ(str[2] = sb_add(&sb, "CCCC"), buf + 10);
-	EQ(str[3] = sb_add(&sb, "D"), NULL);
-	EQ(sb_siz(&sb), 15);
+	OK((str[0] = sb_add(&sb, "AAAA")) == buf +  0);
+	OK((str[1] = sb_add(&sb, "BBBB")) == buf +  5);
+	OK((str[2] = sb_add(&sb, "CCCC")) == buf + 10);
+	OK((str[3] = sb_add(&sb, "D")) == NULL);
+	OK(sb_siz(&sb) == 15);
 	STR_EQ(str[0], "AAAA");
 	STR_EQ(str[1], "BBBB");
 	STR_EQ(str[2], "CCCC");
@@ -47,12 +47,12 @@ TEST("Adds strings to SB after clear")
 	sb_add(&sb, "CCCC");
 	sb_clear(&sb);
 
-	EQ(sb_siz(&sb), 0);
-	EQ(sb._beg, sb._end);
+	OK(sb_siz(&sb) == 0);
+	OK(sb._beg == sb._end);
 
-	EQ(str = sb_add(&sb, "AAAA"), buf);
+	OK((str = sb_add(&sb, "AAAA")) == buf);
 	STR_EQ(str, "AAAA");
-	EQ(sb_siz(&sb), 5);
+	OK(sb_siz(&sb) == 5);
 }
 
 TODO("Adds strings of given length") {}
