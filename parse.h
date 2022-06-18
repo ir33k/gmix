@@ -28,9 +28,9 @@ typedef enum {
 
 /*
  * Based on given parser STATE strip given STR string from leading
- * markup characters and trailing new line character to.  Return
- * pointer to modified string.  Given STR string will be modified in
- * the process.  This function is useful because it delivers just the
+ * markup characters and trailing new line character.  Return pointer
+ * to modified string.  Given STR string will be modified in the
+ * process.  This function is useful because it delivers just the
  * content of parsed line.  New line character is removed because in
  * some output formats new line is controlled differently than by \n
  * like in HTML.  Note that preformatted lines should not be modified
@@ -41,10 +41,10 @@ char *parse_clean(PARSE state, char *str);
 
 /*
  * Given previous parser STATE (0 on first usage) put bites from FP
- * file to BUF buffer of SIZ size.  Works like fgets but return PARSE
- * state of current BUF content.  State will contain one of "LINE
- * TYPE" flags and any number of "LINE INFO" flags.  Return PARSE_NUL
- * when parsing comes to the end.
+ * file to LINE buffer of SIZ size making it null-terminated string.
+ * Works like fgets but return PARSE state of current LINE content.
+ * State will contain one of "LINE TYPE" flags and any number of "LINE
+ * INFO" flags.  Return PARSE_NUL when parsing comes to the end.
  *
  * I believe that the smallest buffer LINE SIZ size possible is the
  * longest markup prefix + end line + null which gives 6.  I don't

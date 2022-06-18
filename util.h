@@ -9,9 +9,4 @@
  */
 void die(char *fmt, ...);
 
-/*
- * Return true if given FLAG exists in flags LIST.
- */
-int flagged(int list, int flag);
-
 #endif	/* UTIL_H_ */

@@ -1,4 +1,7 @@
+/* Parse text/gemini text format so lines are prefixed with type. */
+
 #include <stdio.h>
+#include <getopt.h>
 
 #include "util.h"
 #include "parse.h"
@@ -8,20 +11,21 @@
 
 #define BSIZ	8		/* Buffer size */
 
-/*
- * Print program usage instruction using provided progrm NAME.
- */
-void usage(char *name);
-
-/* TODO(irek): This program don't require any arguments so strategy to
- * print usage text when no argument is provided doesn't work here. */
-
 int
 main(int argc, char **argv)
 {
 	PARSE   state;		/* Parsing state */
-	char    buf[BSIZ];	/* For reading file */
+	char    line[BSIZ];	/* For reading file */
 	FILE   *fp;
+
+	if (getopt(argc, argv, "h") != -1) {
+		printf("GMI Parser - Parse Gemeni text.\n\n"
+		       "usage: %s [-h] [file]\n\n"
+		       "\t-h\tPrint this usage help message.\n"
+		       "\tfile\tFile to parse, use stdin by default.\n\n",
+		       argv[0]);
+		return 1;
+	}
 
 	state = PARSE_NUL;
 	fp  = stdin;		/* Read from stdin by default */
@@ -31,35 +35,23 @@ main(int argc, char **argv)
 			die("fopen:");
 	}
 
-	while ((state = parse(state, buf, BSIZ, fp)) != PARSE_NUL) {
-		if (flagged(state, PARSE_BEG)) {
-			/**/ if (flagged(state, PARSE_H1))
-				printf("h1");
-			else if (flagged(state, PARSE_H2))
-				printf("h2");
-			else if (flagged(state, PARSE_H3))
-				printf("h3");
-			else if (flagged(state, PARSE_P))
-				printf("p");
-			else if (flagged(state, PARSE_BR))
-				printf("br");
-			else if (flagged(state, PARSE_URI))
-				printf("uri");
-			else if (flagged(state, PARSE_LI))
-				printf("li");
-			else if (flagged(state, PARSE_Q))
-				printf("quote");
-			else if (flagged(state, PARSE_PRE))
-				printf("pre");
-			else if (flagged(state, PARSE_RES))
-				printf("res");
-
+	while ((state = parse(state, line, BSIZ, fp)) != PARSE_NUL) {
+		if (state & PARSE_BEG) {
+			/**/ if (state & PARSE_H1)  printf("h1");
+			else if (state & PARSE_H2)  printf("h2");
+			else if (state & PARSE_H3)  printf("h3");
+			else if (state & PARSE_P)   printf("p");
+			else if (state & PARSE_BR)  printf("br");
+			else if (state & PARSE_URI) printf("uri");
+			else if (state & PARSE_LI)  printf("li");
+			else if (state & PARSE_Q)   printf("quote");
+			else if (state & PARSE_PRE) printf("pre");
+			else if (state & PARSE_RES) printf("res");
 			putchar('\t');
 		}
+		fputs(parse_clean(state, line), stdout);
 
-		fputs(parse_clean(state, buf), stdout);
-
-		if (flagged(state, PARSE_END))
+		if (state & PARSE_END)
 			putchar('\n');
 	}
 
@@ -67,14 +59,4 @@ main(int argc, char **argv)
 		die("fclose:");
 
 	return 0;
-}
-
-void
-usage(char *name)
-{
-	/* TODO(irek): Function is not used yet and usage instruction
-	 * itself is also not correct. */
-	printf("(GMI Parser) Parse Gemeni text.\n\n"
-	       "\tusage: %s [file]\n\n",
-	       name);
 }

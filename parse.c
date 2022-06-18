@@ -10,13 +10,13 @@ parse_clean(PARSE state, char *str)
 	size_t   len;
 
 	/* Trim leading line type markup characters. */
-	if (flagged(state, PARSE_BEG) &&
-	    (flagged(state, PARSE_Q) ||
-	     flagged(state, PARSE_H1) ||
-	     flagged(state, PARSE_H2) ||
-	     flagged(state, PARSE_H3) ||
-	     flagged(state, PARSE_URI) ||
-	     flagged(state, PARSE_LI) ||
+	if ((state & PARSE_BEG) &&
+	    ((state & PARSE_Q) ||
+	     (state & PARSE_H1) ||
+	     (state & PARSE_H2) ||
+	     (state & PARSE_H3) ||
+	     (state & PARSE_URI) ||
+	     (state & PARSE_LI) ||
 	     (strncmp(str, "```",  3) == 0))) {
 		while (str[0] != ' ' && str[0] != '\t' && str[0] != '\0')
 			str += 1;
@@ -26,7 +26,7 @@ parse_clean(PARSE state, char *str)
 	}
 
 	/* Trim ending new line char. */
-	if (flagged(state, PARSE_END)) {
+	if (state & PARSE_END) {
 		len = strlen(str);
 
 		/* This condition should always be true when PARSE_END
@@ -54,12 +54,12 @@ parse(PARSE state, char *line, size_t siz, FILE *fp)
 	/* Check if previous state was had line end.  If yes then this
 	 * should be a new line beginning, else use previous state
 	 * without beginning and ending flags. */
-	if (state == PARSE_NUL || flagged(state, PARSE_END)) {
+	if (state == PARSE_NUL || (state & PARSE_END)) {
 		res = PARSE_BEG;
 	} else {
 		res = state;
-		if (flagged(res, PARSE_BEG)) res ^= PARSE_BEG;
-		if (flagged(res, PARSE_END)) res ^= PARSE_END;
+		if (res & PARSE_BEG) res ^= PARSE_BEG;
+		if (res & PARSE_END) res ^= PARSE_END;
 	}
 
 	len = strlen(line);
@@ -67,14 +67,14 @@ parse(PARSE state, char *line, size_t siz, FILE *fp)
 	if (line[len-1] == '\n')
 		res |= PARSE_END;
 
-	if (flagged(state, PARSE_PRE)) {
-		if (flagged(res, PARSE_BEG) && strncmp(line, "```", 3) == 0)
+	if (state & PARSE_PRE) {
+		if ((res & PARSE_BEG) && strncmp(line, "```", 3) == 0)
 			return res | PARSE_BR;
 
 		return res | PARSE_PRE;
 	}
 
-	if (flagged(res, PARSE_BEG) == 0)
+	if (!(res & PARSE_BEG))
 		return res;
 
 	/* TODO(irek): Missing PARSE_RES.  I'm not sure how to detect
