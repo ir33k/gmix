@@ -3,7 +3,7 @@
 
 #define BSIZ    16
 
-TEST("Initialize properly")
+TEST("sb_init")
 {
 	char     buf[BSIZ];
 	Sb	 sb;		/* Strings Buffer data structure */
@@ -16,7 +16,7 @@ TEST("Initialize properly")
 	OK(sb_siz(&sb) == 0);
 }
 
-TEST("Adds strings to SB as long as possible")
+TEST("sb_add")
 {
 	char     buf[BSIZ];
 	Sb	 sb;
@@ -35,7 +35,7 @@ TEST("Adds strings to SB as long as possible")
 	STR_EQ(str[3], NULL);
 }
 
-TEST("Adds strings to SB after clear")
+TEST("sb_clear")
 {
 	char     buf[BSIZ];
 	Sb	 sb;
@@ -55,4 +55,21 @@ TEST("Adds strings to SB after clear")
 	OK(sb_siz(&sb) == 5);
 }
 
-TODO("Adds strings of given length") {}
+TEST("sb_addn")
+{
+	char     buf[BSIZ];
+	Sb	 sb;
+	char	*str[3];	/* Pointers for string in BUF */
+
+	sb_init(&sb, buf, BSIZ);
+
+	OK((str[0] = sb_addn(&sb, "ABCDEFG", 3)) != NULL);
+	OK((str[1] = sb_addn(&sb, "abcdefg", 4)) != NULL);
+	OK((str[2] = sb_addn(&sb, "0123456", 5)) != NULL);
+
+	STR_EQ(str[0], "ABC");
+	STR_EQ(str[1], "abcd");
+	STR_EQ(str[2], "01234");
+
+	OK(sb_siz(&sb) == 15);
+}
