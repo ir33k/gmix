@@ -9,21 +9,29 @@
 
 #include <openssl/ssl.h>
 
+enum _fetch_tcp {
+	_FETCH_TCP_OK  = 0,
+	_FETCH_TCP_ERR = 1	/* Can't establish connection */
+	/*
+	 * Your switch-case should include "default" case to handle
+	 * error codes returned by getaddrinfo.
+	 */
+};
+
 /*
  * Open TCP IP socket connection to HOST with PORT.  On succes return
- * 0 and set SFD Socket File Descriptor.  If returned value is 1 then
- * connection can't be established.  Any other value is getaddrinfo
- * error code.
+ * 0 and set SFD Socket File Descriptor.  If returned value is not
+ * covered by enum then it is getaddrinfo error code.
  *
  * Actually, according to man page, getaddrinfo returns any value
  * different that 0 as error.  So it could by 1 in theory.  But after
  * checking source code I found that all errors have negative values.
  * I need to distinguish between getaddrinfo erros and connection
  * error in single int value so I can print proper error message
- * outside this function.  I dediced that value of 1 is connection
+ * outside this function.  I decided that value of 1 is connection
  * error and all other are getaddrinfo errors.
  */
-int fetch__connect_tcp(char *host, char *port, int *sfd);
+enum _fetch_tcp _fetch_tcp(char *host, char *port, int *sfd);
 
 /*
  * Initialize OpenSSL library.  Should be called only once before

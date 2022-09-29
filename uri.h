@@ -47,25 +47,44 @@ typedef struct {
 	char    *qstr;		/* Query string without "?" prefix */
 } Uri;
 
+enum _uri_2url {
+	_URI_2URL_OK = 0,
+	_URI_2URL_TOO_LONG	/* URI longer than URI_MAX */
+};
+
+enum uri_create {
+	URI_CREATE_OK = 0,
+	URI_CREATE_PROT,	/* Failed on "prot" URI part */
+	URI_CREATE_HOST,	/* Failed on "host" URI part */
+	URI_CREATE_PORT,	/* Failed on "port" URI part */
+	URI_CREATE_PATH,	/* Failed on "path" URI part */
+	URI_CREATE_QSTR,	/* Failed on "qstr" URI part */
+	URI_CREATE_2URL		/* Failed on "url"  URI part */
+};
+
+enum uri_parse {
+	URI_PARSE_OK = 0,
+	URI_PARSE_TOO_LONG	/* Parsed URI longer than URI_MAX */
+};
+
 /*
  * Take URI parts and print from them normalized URL in BUF string.
- * It's expected that BUF has size URI_MAX+1 or bigger.  Return 0 on
- * success, return <0 on error.
+ * It's expected that BUF has size URI_MAX+1 or bigger.
  */
-int uri__2url(Uri *uri, char *buf);
+enum _uri_2url _uri_2url(Uri *uri, char *buf);
 
 /*
  * Create URI from given parts.  All parts are optional and could be
  * NULL.  Default values wihh NOT be used.  URI will be created exact
  * passed values so keep in mind to not pass "://" in PROT, ":" in
- * PORT and "?" in QSTR.  Return 0 on success.
+ * PORT and "?" in QSTR.
  */
-int uri_create(Uri *uri, char *prot, char *host, char *port,
-	       char *path, char *qstr);
+enum uri_create uri_create(Uri *uri, char *prot, char *host,
+			   char *port, char *path, char *qstr);
 
 /*
- * Parse SRC string to URI.  Return 0 on success.
+ * Parse SRC string to URI.
  */
-int uri_parse(Uri *uri, char *src);
+enum uri_parse uri_parse(Uri *uri, char *src);
 
 #endif	/* URI_H_ */

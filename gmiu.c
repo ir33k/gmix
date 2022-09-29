@@ -25,8 +25,10 @@ main(int argc, char **argv)
 		die("Missing argument");
 	}
 
-	if (uri_parse(&uri, argv[argc-1]) != 0)
-		die("Parse failed");
+	switch (uri_parse(&uri, argv[argc-1])) {
+	case URI_PARSE_OK: break;
+	case URI_PARSE_TOO_LONG: die("Parsed URI is too long");
+	}
 
 	/* Print output for gmif program if -f option is provided. */
 	while ((opt = getopt(argc, argv, "f")) != -1) {

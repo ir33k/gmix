@@ -6,8 +6,8 @@
 #include "sb.h"
 #include "uri.h"
 
-int
-uri__2url(Uri *uri, char *buf)
+enum _uri_2url
+_uri_2url(Uri *uri, char *buf)
 {
 	int     len;		/* Lenght of normalized URL */
 
@@ -16,36 +16,36 @@ uri__2url(Uri *uri, char *buf)
 
 	if (uri->prot != NULL) {
 		len += strlen(uri->prot) + 3;
-		if (len > URI_MAX) return -1;
+		if (len > URI_MAX) return _URI_2URL_TOO_LONG;
 		strcat(buf, uri->prot);
 		strcat(buf, "://");
 	}
 	if (uri->host != NULL) {
 		len += strlen(uri->host);
-		if (len > URI_MAX) return -1;
+		if (len > URI_MAX) return _URI_2URL_TOO_LONG;
 		strcat(buf, uri->host);
 	}
 	if (uri->port != NULL) {
 		len += strlen(uri->port) + 1;
-		if (len > URI_MAX) return -1;
+		if (len > URI_MAX) return _URI_2URL_TOO_LONG;
 		strcat(buf, ":");
 		strcat(buf, uri->port);
 	}
 	if (uri->path != NULL) {
 		len += strlen(uri->path);
-		if (len > URI_MAX) return -1;
+		if (len > URI_MAX) return _URI_2URL_TOO_LONG;
 		strcat(buf, uri->path);
 	}
 	if (uri->qstr != NULL) {
 		len += strlen(uri->qstr) + 1;
-		if (len > URI_MAX) return -1;
+		if (len > URI_MAX) return _URI_2URL_TOO_LONG;
 		strcat(buf, "?");
 		strcat(buf, uri->qstr);
 	}
-	return 0;
+	return _URI_2URL_OK;
 }
 
-int
+enum uri_create
 uri_create(Uri *uri, char *prot, char *host, char *port,
 	   char *path, char *qstr)
 {
@@ -56,27 +56,29 @@ uri_create(Uri *uri, char *prot, char *host, char *port,
 	sb_init(&sb, uri->_buf, URI_BSIZ);
 
 	if (prot != NULL && (uri->prot = sb_add(&sb, prot)) == NULL)
-		return -1;
+		return URI_CREATE_PROT;
 
 	if (host != NULL && (uri->host = sb_add(&sb, host)) == NULL)
-		return -1;
+		return URI_CREATE_HOST;
 
 	if (port != NULL && (uri->port = sb_add(&sb, port)) == NULL)
-		return -1;
+		return URI_CREATE_PORT;
 
 	if (path != NULL && (uri->path = sb_add(&sb, path)) == NULL)
-		return -1;
+		return URI_CREATE_PATH;
 
 	if (qstr != NULL && (uri->qstr = sb_add(&sb, qstr)) == NULL)
-		return -1;
+		return URI_CREATE_QSTR;
 
-	if (uri__2url(uri, uri->url) != 0)
-		return -1;
+	switch (_uri_2url(uri, uri->url)) {
+	case _URI_2URL_OK: break;
+	case _URI_2URL_TOO_LONG: return URI_CREATE_2URL;
+	}
 
-	return 0;
+	return URI_CREATE_OK;
 }
 
-int
+enum uri_parse
 uri_parse(Uri *uri, char *src)
 {
 	Sb      sb;		/* Manipulate _buf with SB */
@@ -86,8 +88,9 @@ uri_parse(Uri *uri, char *src)
 
 	bp = buf;
 
+	/* Too long after all " " are replaced to "%20". */
 	if (strnrep(src, " ", "%20", bp, URI_BSIZ) != 0)
-		return -1;	/* Too long after ' ' replacement */
+		return URI_PARSE_TOO_LONG;
 
 	memset(uri, 0, sizeof(Uri));
 
@@ -141,8 +144,10 @@ uri_parse(Uri *uri, char *src)
 		uri->host = sb_add(&sb, bp);
 	}
 
-	if (uri__2url(uri, uri->url) != 0)
-		return -1;
+	switch (_uri_2url(uri, uri->url)) {
+	case _URI_2URL_OK: break;
+	case _URI_2URL_TOO_LONG: return URI_PARSE_TOO_LONG;
+	}
 
-	return 0;
+	return URI_PARSE_OK;
 }

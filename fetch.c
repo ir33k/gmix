@@ -13,8 +13,8 @@
 
 #include "fetch.h"
 
-int
-fetch__connect_tcp(char *host, char *port, int *sfd)
+enum _fetch_tcp
+_fetch_tcp(char *host, char *port, int *sfd)
 {
 	int err;
 	struct addrinfo hint, *res, *rp;
@@ -40,7 +40,7 @@ fetch__connect_tcp(char *host, char *port, int *sfd)
 	}
 	freeaddrinfo(res);
 
-	return rp == NULL ? 1 : 0;
+	return rp == NULL ? _FETCH_TCP_ERR : _FETCH_TCP_OK;
 }
 
 void
@@ -57,8 +57,12 @@ fetch_open(char *host, char *port, char *url)
 	SSL_CTX   *ctx;		/* SSL Context */
 	SSL       *ssl;		/* SSL connection */
 
-	if (fetch__connect_tcp(host, port, &sfd) != 0)
+	switch (_fetch_tcp(host, port, &sfd)) {
+	case _FETCH_TCP_OK: break;
+	case _FETCH_TCP_ERR:
+	default:
 		return NULL;
+	}
 
 	if ((ctx = SSL_CTX_new(TLS_client_method())) == NULL)
 		return NULL;

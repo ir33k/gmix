@@ -22,8 +22,10 @@ main(int argc, char **argv)
 	if (argc < 2)
 		die("usage: %s url", argv[0]);
 
-	if (uri_parse(&uri, argv[1]) != 0)
-		die("uri_parse: Invalid url %s", argv[1]);
+	switch (uri_parse(&uri, argv[1])) {
+	case URI_PARSE_OK: break;
+	case URI_PARSE_TOO_LONG: die("Parsed url is too long");
+	}
 
 	printf("uri.url     %s\n", uri.url);
 	printf("uri._buf    ");
