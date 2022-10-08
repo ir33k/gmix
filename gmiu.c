@@ -1,3 +1,5 @@
+/* Gemini URI parser - parse URL and print all URI parts. */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -6,23 +8,41 @@
 #include "uri.h"
 
 /*
- * Print program usage instruction using provided progrm NAME.
+ * Print program usage instruction.  ARGV0 is program name.
  */
-void usage(char *name);
+void usage(char *argv0);
 
-/*
- * Parse given URL and print all URI parts.
- */
+void
+usage(char *argv0)
+{
+	die("GMI URI - Parse Gemeni URL.\n\n"
+	    "usage: %s [-fh] uri\n\n"
+	    "\t-f\tPrint parsed URI in format compatible with gmif.\n"
+	    "\t-h\tPrint this help usage message.\n"
+	    "\turi\tURL string to parse.\n",
+	    argv0);
+}
+
 int
 main(int argc, char **argv)
 {
-	Uri	uri;
-	char	opt;
+	/* OPTF is to indicate if program was run with -f flag. */
+	Uri uri;
+	char opt;
+	int optf = 0;
 
-	if (argc < 2) {
+	if (argc < 2)
 		usage(argv[0]);
-		putchar('\n');
-		die("Missing argument");
+
+	while ((opt = getopt(argc, argv, "fh")) != -1) {
+		switch (opt) {
+		case 'f':
+			optf = 1;
+			break;
+		case 'h':
+		default:
+			usage(argv[0]);
+		}
 	}
 
 	switch (uri_parse(&uri, argv[argc-1])) {
@@ -30,36 +50,22 @@ main(int argc, char **argv)
 	case URI_PARSE_TOO_LONG: die("Parsed URI is too long");
 	}
 
-	/* Print output for gmif program if -f option is provided. */
-	while ((opt = getopt(argc, argv, "f")) != -1) {
-		if (opt == 'f') {
-			printf("%s %s %s",
-			       uri.url  == NULL ? "" : uri.url,
-			       uri.host == NULL ? "" : uri.host,
-			       uri.port == NULL ? "" : uri.port);
-			return 0;	/* End here */
-		}
+	/* Print output for gmif program if -f option was provided. */
+	if (optf) {
+		printf("%s %s %s",
+		       uri.url,
+		       uri.host ? uri.host : "",
+		       uri.port ? uri.port : "");
+		return 0;	/* End here */
 	}
 
-	/* Else print everything */
-	printf("%s\n", uri.url  == NULL ? "" : uri.url);
-	printf("%s\n", uri.prot == NULL ? "" : uri.prot);
-	printf("%s\n", uri.host == NULL ? "" : uri.host);
-	printf("%s\n", uri.port == NULL ? "" : uri.port);
-	printf("%s\n", uri.path == NULL ? "" : uri.path);
-	printf("%s\n", uri.qstr == NULL ? "" : uri.qstr);
+	/* Else print everything. */
+	printf("%s\n", uri.url);
+	printf("%s\n", uri.prot ? uri.prot : "");
+	printf("%s\n", uri.host ? uri.host : "");
+	printf("%s\n", uri.port ? uri.port : "");
+	printf("%s\n", uri.path ? uri.path : "");
+	printf("%s\n", uri.qstr ? uri.qstr : "");
 
 	return 0;
-}
-
-void
-usage(char *name)
-{
-	printf("(GMI URI) Parse Gemeni URL and print result in stdout.\n\n"
-	       "\tusage: %s [-f] uri\n\n"
-	       "Parsed URI is printed in normalized URL format, and with\n"
-	       "all URI parts: protocol, hostname, port, path and query.\n"
-	       "If -f option is provided then output is printed in format\n"
-	       "prepared or gmif progrm.\n",
-	       name);
 }

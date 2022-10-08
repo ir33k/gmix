@@ -28,8 +28,8 @@ main(int argc, char **argv)
 	}
 
 	printf("uri.url     %s\n", uri.url);
-	printf("uri._buf    ");
-	fwrite(uri._buf, 1, strlen(uri.url), stdout);
+	printf("uri._sb     ");
+	fwrite(uri._sb, 1, strlen(uri.url), stdout);
 	printf("\n");
 	printf("uri.prot    %s\n", uri.prot);
 	printf("uri.host    %s\n", uri.host);

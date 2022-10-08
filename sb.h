@@ -22,13 +22,13 @@ typedef struct {
 } Sb;
 
 /*
- * Setup Strings Buffer that SB Strings Buffer Pointer points to with
- * given BUF buffer of given MAX size.
+ * Initialize SB Strings Buffer with BUF Buffer pointer of MAX size.
  */
 void sb_init(Sb *sb, char *buf, size_t max);
 
 /*
- * Get size of currently occupied space in SB buffer.
+ * Get size of currently occupied space in SB buffer including end
+ * NULL characters of all stored strings.
  */
 size_t sb_siz(Sb *sb);
 

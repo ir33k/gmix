@@ -6,10 +6,10 @@
 #include "util.h"
 #include "parse.h"
 
-/* It's probably better to use default BUFSIZ value for buffer size
- * which on modern machines is much higher but that would result in
- * parsing each line as a whole and I want to do it in small parts to
- * test parser capabilities and catch mistakes. */
+/* It's probably better to use default BUFSIZ value defined in stdio.h
+ * for buffer size which on modern machines is much higher but that
+ * would result in parsing each line as a whole and I want to do it in
+ * small parts to test parser capabilities and catch mistakes. */
 
 #define BSIZ    32		/* Buffer size */
 #define INDENT  "\t"		/* Indentation for HTML tags */
@@ -17,11 +17,15 @@
 int
 main(int argc, char **argv)
 {
-	PARSE   old;		/* Previous parsing state */
-	PARSE   new;		/* New parsing state */
-	char    line[BSIZ];	/* For reading file */
-	FILE   *fp;		/* File Pointer */
-	
+	/* 2 parse states, OLD used to keep previous parse state and
+	 * NEW for currently parsed part.  This allows to easily
+	 * detect when parsing block of the same lines like links or
+	 * list items lines started and ended.  LINE is main parser
+	 * buffer and FP is parsed stream that defaults to stdin. */
+	Parse old, new;
+	char line[BSIZ];
+	FILE *fp;
+
 	if (getopt(argc, argv, "h") != -1) {
 		printf("GMI 2 HTML - Parse Gemeni text to HTML.\n\n"
 		       "usage: %s [-h] [file]\n\n"
@@ -34,6 +38,8 @@ main(int argc, char **argv)
 	fp  = stdin;		/* Read from stdin by default */
 	old = PARSE_NUL;
 
+	/* TODO(irek): Make it possible to parse multiple files? */
+
 	if (argc > 1) {
 		if ((fp = fopen(argv[1], "rb")) == NULL)
 			die("fopen:");
@@ -42,7 +48,7 @@ main(int argc, char **argv)
 	while ((new = parse(old, line, BSIZ, fp)) != PARSE_NUL) {
 		/* Note that PARSE_BR is ignored in HTML parser
 		 * because new lines are achieved by opening and
-		 * closing block (not inline like span) tags. */
+		 * closing block tags. */
 
 		/* Open or close tag groups when old and new status
 		 * differs between parsing iterations. */

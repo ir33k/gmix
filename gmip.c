@@ -14,9 +14,9 @@
 int
 main(int argc, char **argv)
 {
-	PARSE   state;		/* Parsing state */
-	char    line[BSIZ];	/* For reading file */
-	FILE   *fp;
+	Parse state;
+	char line[BSIZ];
+	FILE *fp;
 
 	if (getopt(argc, argv, "h") != -1) {
 		printf("GMI Parser - Parse Gemeni text.\n\n"
@@ -36,6 +36,7 @@ main(int argc, char **argv)
 	}
 
 	while ((state = parse(state, line, BSIZ, fp)) != PARSE_NUL) {
+		/* Print prefix for each line type. */
 		if (state & PARSE_BEG) {
 			/**/ if (state & PARSE_H1)  printf("h1");
 			else if (state & PARSE_H2)  printf("h2");
@@ -49,8 +50,16 @@ main(int argc, char **argv)
 			else if (state & PARSE_RES) printf("res");
 			putchar('\t');
 		}
+
+		/* Handle URI with dedicated functions. */
+		/* if (state & PARSE_URI) { */
+		/* 	#error "WIP: parse URI url and message." */
+		/* } */
+
+		/* Print content of line. */
 		fputs(parse_clean(state, line), stdout);
 
+		/* End line. */
 		if (state & PARSE_END)
 			putchar('\n');
 	}

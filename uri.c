@@ -49,11 +49,12 @@ enum uri_create
 uri_create(Uri *uri, char *prot, char *host, char *port,
 	   char *path, char *qstr)
 {
-	Sb      sb;		/* Manipulate _buf with SB */
+	/* Manipulate _sb with SB. */
+	Sb sb;
 
 	memset(uri, 0, sizeof(Uri));
 
-	sb_init(&sb, uri->_buf, URI_BSIZ);
+	sb_init(&sb, uri->_sb, URI_BSIZ);
 
 	if (prot != NULL && (uri->prot = sb_add(&sb, prot)) == NULL)
 		return URI_CREATE_PROT;
@@ -81,20 +82,22 @@ uri_create(Uri *uri, char *prot, char *host, char *port,
 enum uri_parse
 uri_parse(Uri *uri, char *src)
 {
-	Sb      sb;		/* Manipulate _buf with SB */
-	char    buf[URI_BSIZ];	/* TMP buffer to avoid modifing SRC */
-	char   *bp;
-	char   *found;		/* Beggining of searched string */
+	/* BUF will contain content of SRC but with spaces replaced to
+	 * %20.  BP is just to make manipulation of BUF easier and
+	 * FOUND is used while searching in BUF.  SB is used to
+	 * manipulate _sb of URI. */
+	char buf[URI_BSIZ], *bp, *found;
+	Sb sb;
 
 	bp = buf;
 
 	/* Too long after all " " are replaced to "%20". */
-	if (strnrep(src, " ", "%20", bp, URI_BSIZ) != 0)
+	if (str_nrep(src, " ", "%20", bp, URI_BSIZ) != 0)
 		return URI_PARSE_TOO_LONG;
 
 	memset(uri, 0, sizeof(Uri));
 
-	sb_init(&sb, uri->_buf, URI_BSIZ);
+	sb_init(&sb, uri->_sb, URI_BSIZ);
 
 	/* TODO(irek): It looks like right now parsing can fail only
 	 * if URI in BUF is too long.  There are more cases when we

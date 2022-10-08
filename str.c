@@ -2,8 +2,17 @@
 
 #include "str.h"
 
+char *
+str_triml(char *str)
+{
+	while (str[0] == ' ' || str[0] == '\t')
+		str += 1;
+
+	return str;
+}
+
 int
-strnrep(char *src, char *from, char *to, char *dest, size_t max)
+str_nrep(char *src, char *from, char *to, char *dest, size_t max)
 {
 	size_t  i;		/* Index for SRC string */
 	size_t  j;		/* Index for DEST string */

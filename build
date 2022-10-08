@@ -1,4 +1,7 @@
-#!/bin/sh -e
+#!/usr/bin/env sh
+
+# Stop execution on first error
+set -e
 
 CC="cc"
 CFLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -Wswitch-enum -pedantic -std=c89"
@@ -15,17 +18,14 @@ $CCF -c res.c
 $CCF -c parse.c
 
 # Compile and run tests
-$CCF -o sb.t  sb.t.c           sb.o                && ./sb.t
-$CCF -o str.t str.t.c          str.o               && ./str.t
-$CCF -o uri.t uri.t.c          uri.o sb.o str.o    && ./uri.t
+$CCF -o str.t     str.t.c      str.o               && ./str.t
+$CCF -o sb.t      sb.t.c       sb.o                && ./sb.t
+$CCF -o uri.t     uri.t.c      uri.o sb.o str.o    && ./uri.t
+$CCF -o parse.t   parse.t.c    parse.o str.o       && ./parse.t
 
-# Compile simple programs
-$CCF -o gmiu gmiu.c            util.o uri.o sb.o str.o
-$CCF -o gmif gmif.c            util.o fetch.o $LIBSSL
-
-# Compile text/gemini parsers
-$CCF -o gmip     gmip.c        util.o parse.o
-$CCF -o gmi2html gmi2html.c    util.o parse.o
-
-# Compile interactive client
-$CCF -o gmic gmic.c            util.o uri.o sb.o str.o fetch.o $LIBSSL
+# Compile programs
+$CCF -o gmiu      gmiu.c       util.o uri.o sb.o str.o
+$CCF -o gmif      gmif.c       util.o fetch.o $LIBSSL
+$CCF -o gmip      gmip.c       util.o parse.o str.o
+$CCF -o gmi2html  gmi2html.c   util.o parse.o str.o
+$CCF -o gmic      gmic.c       util.o uri.o sb.o str.o fetch.o $LIBSSL

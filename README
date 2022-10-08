@@ -1,24 +1,24 @@
-GEMINI RELATED PROGRAMS
+LIBS AND PROGRAMS FOR GEMINI PROTOCOL
 
-In "gmix" repo name "gmi" stands for Gemini, and "x" means that this
-is a family of programs.  Written in c89 for fun in NOT spare time
-instead of doing actual work AKA procrastination via programming.
-Please, send help  X__x
+Written in c89 for fun in NOT spare time instead of doing actual work
+AKA procrastination via programming.  Please, send help X__x
 
-Build all programs with script:
+Build and test all programs with script:
 
 	$ ./build	# Dependencies: stdlib and OpenSSL
 
-Run program without arguments to see usage instruction:
+Programs:
 
 	$ ./gmiu	# URL parser
 	$ ./gmif	# Fetch URL
-	$ ./gmip	# Parse text/gemini			/)_/)
+	$ ./gmip	# Parse text/gemini                     /)_/)
 	$ ./gmi2html	# Parse text/gemini to HTML  WIP       (-.- )
 	$ ./gmic	# Client (interactive TUI)   WIP     (")(")_o
 
 Example of using programs together by passing parsed URL to fetch
-program and piping result through Gemini text format parser.
+program and piping result through parser.
 
 	$ ./gmif $(./gmiu -f tilde.pink)   | ./gmip
 	$ ./gmif $(./gmiu -f rawtext.club) | ./gmi2html
+
+TODO Try one of simpler compilers: https://suckless.org/rocks/

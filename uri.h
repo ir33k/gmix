@@ -1,6 +1,19 @@
-/* Parse and validate Gemini URI (Uniform Resource Identifier) */
+/* Parse, create and validate Gemini URI */
 
 /*
+ * URI stands fro "Uniform Resource Identifier".
+ * URL stands for "Uniform Resource Locator".
+ *
+ * In order to stay close to Gemini protocol specification this lib is
+ * called URI.  When "uri" keyword is used then it refers to main lib
+ * Uri structure which defines all URI parts including normalized URL.
+ * When "url" keyword is used it means normalized URI as string.
+ */
+
+/*
+ * From Gemini protocol specification
+ * https://gemini.circumlunar.space/docs/specification.gmi
+ *
  * 1.2 Gemini URI scheme
  * 
  * Resources hosted via Gemini are identified using URIs with the
@@ -27,24 +40,29 @@
 #ifndef URI_H_
 #define URI_H_
 
-#define URI_MAX     1024	/* Gemini URI max length */
-#define URI_BSIZ   (URI_MAX+1)	/* Buffer size that can hold URI */
+#define URI_MAX     1024	/* Gemini URL max length */
+#define URI_BSIZ   (URI_MAX+1)	/* Buffer size that can hold URL */
 #define URI_PROT   "gemini"	/* Gemini protocol without :// */
 #define URI_PORT   "1965"	/* Default Gemini port */
 #define URI_PATH   "/"		/* Gemini default root path */
 
+/*
+ * Structure fields are consider read only.  Use uri_parse to create
+ * URI from URL like string.  Use uri_create when you want to set URI
+ * parts directly.  Both functions will set all fields.
+ */
 typedef struct {
-	char     url[URI_BSIZ];	/* Normalized URL */
-	char    _buf[URI_BSIZ];	/* Private buffer for URI parts */
+	char	url[URI_BSIZ];	/* Normalized URL */
+	char	_sb[URI_BSIZ];	/* Private strings buffer */
 	/*
 	 * So called parts or components of URI.  All are just
-	 * pointers to strings located in internal _buf buffer.
+	 * pointers to strings located in internal _sb buffer.
 	 */
-	char    *prot;		/* Protocol without "://" */
-	char    *host;		/* AKA domain */
-	char    *port;		/* Without prefix ":" */
-	char    *path;		/* Often empty as root path "/" */
-	char    *qstr;		/* Query string without "?" prefix */
+	char	*prot;		/* Protocol without "://" */
+	char	*host;		/* AKA domain */
+	char	*port;		/* Without prefix ":" */
+	char	*path;		/* Often empty as root path "/" */
+	char	*qstr;		/* Query string without "?" prefix */
 } Uri;
 
 enum _uri_2url {

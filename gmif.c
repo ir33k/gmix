@@ -1,3 +1,5 @@
+/* Gemini Fetch - Get Gemini capsule (page) content. */
+
 #include <stdio.h>
 
 #include "util.h"
@@ -29,7 +31,7 @@ main(int argc, char **argv)
 
 	fetch_init();
 
-	/* Build resource URL with suffix \r\n. */
+	/* Build resource URL with required suffix \r\n. */
 	sprintf(buf, "%s\r\n", argv[1]);
 
 	if ((ssl = fetch_open(argv[2], argc > 3 ? argv[3] : PORT, buf)) == NULL)
