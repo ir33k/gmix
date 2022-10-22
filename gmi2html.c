@@ -1,6 +1,7 @@
 /* Parse text/gemini text format to HTML syntax. */
 
 #include <stdio.h>
+#include <string.h>
 #include <getopt.h>
 
 #include "util.h"
@@ -12,7 +13,20 @@
  * small parts to test parser capabilities and catch mistakes. */
 
 #define BSIZ    32		/* Buffer size */
+#define URLSIZ  1024+1		/* Buffer size that can hold URL */
 #define INDENT  "\t"		/* Indentation for HTML tags */
+
+/* If VAL is smaller than MIN, return MIN.  When it's bigger than MAX,
+ * return MAX.  Otherwise return original VAL.*/
+int clamp(int min, int val, int max);
+
+int
+clamp(int min, int val, int max)
+{
+	if (val < min) return min;
+	if (val > max) return max;
+	return val;
+}
 
 int
 main(int argc, char **argv)
@@ -20,9 +34,13 @@ main(int argc, char **argv)
 	/* 2 parse states, OLD used to keep previous parse state and
 	 * NEW for currently parsed part.  This allows to easily
 	 * detect when parsing block of the same lines like links or
-	 * list items lines started and ended.  LINE is main parser
-	 * buffer and FP is parsed stream that defaults to stdin. */
+	 * list items lines started and ended.  URL is for holding
+	 * whole last parsed url so it's possible to print it later
+	 * again when optional url desciption is not provided.  BUF is
+	 * main parser buffer and FP is parsed stream that defaults to
+	 * stdin. */
 	Parse old = PARSE_NUL, new;
+	char url[URLSIZ];
 	char buf[BSIZ];
 	FILE *fp = stdin;	/* Read from stdin by default */
 
@@ -62,9 +80,9 @@ main(int argc, char **argv)
 		else if ((new & PARSE_PRE) && !(old & PARSE_PRE))
 			printf("<pre>\n");
 		else if ((new & PARSE_URL) && (old & PARSE_URL) && (old & PARSE_END) && !(new & PARSE_DSC))
-			printf("link</a></li>\n");
+			printf("%s</a></li>\n", url);
 		else if ((old & PARSE_URL) && !(new & PARSE_URL) && !(new & PARSE_DSC))
-			printf("link</a></li>\n</ul>\n");
+			printf("%s</a></li>\n</ul>\n", url);
 		else if ((old & PARSE_DSC) && (old & PARSE_END) && !(new & PARSE_URL))
 			printf("</ul>\n");
 		else if ((old & PARSE_URL) && !(new & PARSE_URL) && !(new & PARSE_DSC))
@@ -84,6 +102,15 @@ main(int argc, char **argv)
 			else if (new & PARSE_DSC); /* Do nothing */
 			else if (new & PARSE_ULI) printf(INDENT "<li>");
 			else if (new & PARSE_Q)   printf("<blockquote>");
+		}
+
+		/* Remember last URL so it's possible to print it
+		 * again if optional DSC for link is not provided. */
+		if (new & PARSE_URL) {
+			if (new & PARSE_BEG) {
+				url[0] = '\0';
+			}
+			strncat(url, buf, clamp(0, strlen(buf), URLSIZ - strlen(url) - 1));
 		}
 		
 		/* Print content of buf. */

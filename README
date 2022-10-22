@@ -12,7 +12,7 @@ Programs:
 	$ ./gmiu	# URL parser
 	$ ./gmif	# Fetch URL
 	$ ./gmip	# Parse text/gemini                     /)_/)
-	$ ./gmi2html	# Parse text/gemini to HTML  WIP       (-.- )
+	$ ./gmi2html	# Parse text/gemini to HTML            (-.- )
 	$ ./gmic	# Client (interactive TUI)   WIP     (")(")_o
 
 Example of using programs together by passing parsed URL to fetch
