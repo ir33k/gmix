@@ -22,9 +22,9 @@ main(int argc, char **argv)
 	 * detect when parsing block of the same lines like links or
 	 * list items lines started and ended.  LINE is main parser
 	 * buffer and FP is parsed stream that defaults to stdin. */
-	Parse old, new;
-	char line[BSIZ];
-	FILE *fp;
+	Parse old = PARSE_NUL, new;
+	char buf[BSIZ];
+	FILE *fp = stdin;	/* Read from stdin by default */
 
 	if (getopt(argc, argv, "h") != -1) {
 		printf("GMI 2 HTML - Parse Gemeni text to HTML.\n\n"
@@ -35,9 +35,6 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	fp  = stdin;		/* Read from stdin by default */
-	old = PARSE_NUL;
-
 	/* TODO(irek): Make it possible to parse multiple files? */
 
 	if (argc > 1) {
@@ -45,22 +42,34 @@ main(int argc, char **argv)
 			die("fopen:");
 	}
 
-	while ((new = parse(old, line, BSIZ, fp)) != PARSE_NUL) {
+	while ((new = parse(old, buf, BSIZ, fp)) != PARSE_EOF) {
 		/* Note that PARSE_BR is ignored in HTML parser
 		 * because new lines are achieved by opening and
 		 * closing block tags. */
 
+		/* TODO(irek): Working with blocks and links optional
+		 * desciptions is a bit complicated.  In case of links
+		 * it might be simpler to always return DSC after URL
+		 * but it might be empty string.  IDK what to do with
+		 * block tho. */
+
 		/* Open or close tag groups when old and new status
 		 * differs between parsing iterations. */
-		/**/ if ((new & PARSE_URI) && !(old & PARSE_URI))
+		/**/ if ((new & PARSE_URL) && !(old & PARSE_URL) && !(old & PARSE_DSC))
 			printf("<ul class=\"links\">\n");
-		else if ((new & PARSE_LI)  && !(old & PARSE_LI))
+		else if ((new & PARSE_ULI) && !(old & PARSE_ULI))
 			printf("<ul>\n");
 		else if ((new & PARSE_PRE) && !(old & PARSE_PRE))
 			printf("<pre>\n");
-		else if ((old & PARSE_URI) && !(new & PARSE_URI))
+		else if ((new & PARSE_URL) && (old & PARSE_URL) && (old & PARSE_END) && !(new & PARSE_DSC))
+			printf("link</a></li>\n");
+		else if ((old & PARSE_URL) && !(new & PARSE_URL) && !(new & PARSE_DSC))
+			printf("link</a></li>\n</ul>\n");
+		else if ((old & PARSE_DSC) && (old & PARSE_END) && !(new & PARSE_URL))
 			printf("</ul>\n");
-		else if ((old & PARSE_LI)  && !(new & PARSE_LI))
+		else if ((old & PARSE_URL) && !(new & PARSE_URL) && !(new & PARSE_DSC))
+			printf("</ul>\n");
+		else if ((old & PARSE_ULI) && !(new & PARSE_ULI))
 			printf("</ul>\n");
 		else if ((old & PARSE_PRE) && !(new & PARSE_PRE))
 			printf("</pre>\n");
@@ -71,14 +80,14 @@ main(int argc, char **argv)
 			else if (new & PARSE_H2)  printf("<h2>");
 			else if (new & PARSE_H3)  printf("<h3>");
 			else if (new & PARSE_P)   printf("<p>");
-			else if (new & PARSE_URI) printf(INDENT "<li><a>");
-			else if (new & PARSE_LI)  printf(INDENT "<li>");
+			else if (new & PARSE_URL) printf(INDENT "<li><a href=\"");
+			else if (new & PARSE_DSC); /* Do nothing */
+			else if (new & PARSE_ULI) printf(INDENT "<li>");
 			else if (new & PARSE_Q)   printf("<blockquote>");
-			else if (new & PARSE_RES) printf("<head>");
 		}
-
-		/* Print tag content. */
-		fputs(parse_clean(new, line), stdout);
+		
+		/* Print content of buf. */
+		fputs(buf, stdout);
 
 		/* Close tag. */
 		if (new & PARSE_END) {
@@ -87,10 +96,10 @@ main(int argc, char **argv)
 			else if (new & PARSE_H2)  printf("</h2>\n");
 			else if (new & PARSE_H3)  printf("</h3>\n");
 			else if (new & PARSE_P)   printf("</p>\n");
-			else if (new & PARSE_URI) printf("</a></li>\n");
-			else if (new & PARSE_LI)  printf("</li>\n");
+			else if (new & PARSE_URL) printf("\">");
+			else if (new & PARSE_DSC) printf("</a></li>\n");
+			else if (new & PARSE_ULI) printf("</li>\n");
 			else if (new & PARSE_Q)   printf("</blockquote>\n");
-			else if (new & PARSE_RES) printf("</head>\n");
 		}
 
 		old = new;	/* Store last parsing status */

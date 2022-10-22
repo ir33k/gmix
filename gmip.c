@@ -15,7 +15,7 @@ int
 main(int argc, char **argv)
 {
 	Parse state;
-	char line[BSIZ];
+	char buf[BSIZ];
 	FILE *fp;
 
 	if (getopt(argc, argv, "h") != -1) {
@@ -35,33 +35,34 @@ main(int argc, char **argv)
 			die("fopen:");
 	}
 
-	while ((state = parse(state, line, BSIZ, fp)) != PARSE_NUL) {
-		/* Print prefix for each line type. */
+	while (1) {
+		state = parse(state, buf, BSIZ, fp);
+
+		/* Print prefix for each buf type. */
 		if (state & PARSE_BEG) {
 			/**/ if (state & PARSE_H1)  printf("h1");
 			else if (state & PARSE_H2)  printf("h2");
 			else if (state & PARSE_H3)  printf("h3");
 			else if (state & PARSE_P)   printf("p");
-			else if (state & PARSE_BR)  printf("br");
-			else if (state & PARSE_URI) printf("uri");
-			else if (state & PARSE_LI)  printf("li");
+			else if (state & PARSE_URL) printf("url");
+			else if (state & PARSE_DSC) printf("dsc");
+			else if (state & PARSE_ULI) printf("uli");
 			else if (state & PARSE_Q)   printf("quote");
 			else if (state & PARSE_PRE) printf("pre");
-			else if (state & PARSE_RES) printf("res");
+			else printf("unknown");
 			putchar('\t');
 		}
 
-		/* Handle URI with dedicated functions. */
-		/* if (state & PARSE_URI) { */
-		/* 	#error "WIP: parse URI url and message." */
-		/* } */
-
-		/* Print content of line. */
-		fputs(parse_clean(state, line), stdout);
+		/* Print content of buf. */
+		fputs(buf, stdout);
 
 		/* End line. */
 		if (state & PARSE_END)
 			putchar('\n');
+
+		/* End parsing. */
+		if (state & PARSE_EOF)
+			break;
 	}
 
 	if (fp != stdin && fclose(fp) == EOF)

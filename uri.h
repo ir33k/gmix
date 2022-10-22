@@ -67,7 +67,7 @@ typedef struct {
 
 enum _uri_2url {
 	_URI_2URL_OK = 0,
-	_URI_2URL_TOO_LONG	/* URI longer than URI_MAX */
+	_URI_2URL_TOO_LONG	/* URL longer than URI_MAX */
 };
 
 enum uri_create {
@@ -82,7 +82,7 @@ enum uri_create {
 
 enum uri_parse {
 	URI_PARSE_OK = 0,
-	URI_PARSE_TOO_LONG	/* Parsed URI longer than URI_MAX */
+	URI_PARSE_TOO_LONG	/* URL longer than URI_MAX */
 };
 
 /*
