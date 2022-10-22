@@ -36,9 +36,9 @@ main(int argc, char **argv)
 	 * detect when parsing block of the same lines like links or
 	 * list items lines started and ended.  URL is for holding
 	 * whole last parsed url so it's possible to print it later
-	 * again when optional url desciption is not provided.  BUF is
-	 * main parser buffer and FP is parsed stream that defaults to
-	 * stdin. */
+	 * again when optional url description wan not provided.  BUF
+	 * is main parser buffer and FP is parsed stream which is file
+	 * passed as first program argument or default stdin. */
 	Parse old = PARSE_NUL, new;
 	char url[URLSIZ];
 	char buf[BSIZ];
@@ -61,10 +61,6 @@ main(int argc, char **argv)
 	}
 
 	while ((new = parse(old, buf, BSIZ, fp))) {
-		/* Note that PARSE_BR is ignored in HTML parser
-		 * because new lines are achieved by opening and
-		 * closing block tags. */
-
 		/* TODO(irek): Working with blocks and links optional
 		 * desciptions is a bit complicated.  In case of links
 		 * it might be simpler to always return DSC after URL
