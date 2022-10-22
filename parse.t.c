@@ -349,13 +349,11 @@ TEST("parse")
 	OK((state = parse(state, buf, 8, fp)));
 	OK(!(state & PARSE_BEG));
 	OK( (state & PARSE_END));
-	OK(!(state & PARSE_EOF));
 	OK( (state & PARSE_P));
 	STR_EQ(&buf[0], "Line");
 
 	/* EOF */
-	OK((state = parse(state, buf, 8, fp)));
-	OK( (state & PARSE_EOF));
+	OK((state = parse(state, buf, 8, fp)) == PARSE_NUL);
 	STR_EQ(&buf[0], "");
 }
 
@@ -373,14 +371,9 @@ TEST("Edge case for EOF")
 	OK((state = parse(state, buf, 16, fp)));
 	OK( (state & PARSE_BEG));
 	OK( (state & PARSE_END));
-	OK( (state & PARSE_EOF));
 	OK( (state & PARSE_P));
 	STR_EQ(&buf[0], "Single line");
 
-	OK((state = parse(state, buf, 16, fp)));
-	OK(!(state & PARSE_BEG));
-	OK(!(state & PARSE_END));
-	OK( (state & PARSE_EOF));
-	OK(!(state & PARSE_P));
+	OK((state = parse(state, buf, 16, fp)) == PARSE_NUL);
 	STR_EQ(&buf[0], "");
 }

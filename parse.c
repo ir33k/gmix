@@ -35,7 +35,7 @@ parse__kind(Parse old, FILE *fp)
 		parse__fskip(fp, " \t");
 		str[i] = fgetc(fp);
 		if (str[i] == EOF) {
-			return PARSE_EOF;
+			return PARSE_NUL;
 		}
 		if (str[i] != '\n') {
 			fseek(fp, -1, SEEK_CUR);
@@ -46,7 +46,7 @@ parse__kind(Parse old, FILE *fp)
 	parse__fskip(fp, " \t\n");
 	str[i] = fgetc(fp);
 
-	/**/ if (str[i] == EOF) return PARSE_EOF;
+	/**/ if (str[i] == EOF) return PARSE_NUL;
 	else if (str[i] == '>') return PARSE_Q;
 	else if (str[i] == '*') return PARSE_ULI;
 
@@ -97,7 +97,7 @@ parse(Parse old, char *str, size_t siz, FILE *fp)
 	 * old state line kind without line info. */
 	if (old & PARSE_END || old == PARSE_NUL) {
 		res = parse__kind(old, fp);
-		if (res & PARSE_EOF) {
+		if (res == PARSE_NUL) {
 			str[0] = '\0';
 			return res;
 		}
@@ -108,7 +108,7 @@ parse(Parse old, char *str, size_t siz, FILE *fp)
 		if (res & PARSE_BEG) res ^= PARSE_BEG;
 		if (res & PARSE_END) res ^= PARSE_END;
 	}
-	if (res & PARSE_EOF) {
+	if (res == PARSE_NUL) {
 		str[0] = '\0';
 		return res;
 	}
@@ -119,7 +119,7 @@ parse(Parse old, char *str, size_t siz, FILE *fp)
 		str[i] = fgetc(fp);
 
 		if (str[i] == EOF) {
-			res |= PARSE_END | PARSE_EOF;
+			res |= PARSE_END;
 			break;
 		} else if (res & PARSE_PRE) {
 			if (str[i] == '\n') {

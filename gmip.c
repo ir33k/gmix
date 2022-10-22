@@ -35,9 +35,7 @@ main(int argc, char **argv)
 			die("fopen:");
 	}
 
-	while (1) {
-		state = parse(state, buf, BSIZ, fp);
-
+	while ((state = parse(state, buf, BSIZ, fp))) {
 		/* Print prefix for each buf type. */
 		if (state & PARSE_BEG) {
 			/**/ if (state & PARSE_H1)  printf("h1");
@@ -59,10 +57,6 @@ main(int argc, char **argv)
 		/* End line. */
 		if (state & PARSE_END)
 			putchar('\n');
-
-		/* End parsing. */
-		if (state & PARSE_EOF)
-			break;
 	}
 
 	if (fp != stdin && fclose(fp) == EOF)

@@ -42,7 +42,7 @@ main(int argc, char **argv)
 			die("fopen:");
 	}
 
-	while ((new = parse(old, buf, BSIZ, fp)) != PARSE_EOF) {
+	while ((new = parse(old, buf, BSIZ, fp))) {
 		/* Note that PARSE_BR is ignored in HTML parser
 		 * because new lines are achieved by opening and
 		 * closing block tags. */

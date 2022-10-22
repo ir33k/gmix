@@ -8,20 +8,19 @@
 typedef enum {
 	/* PARSE STATE */
 	PARSE_NUL = 0,		/* Init empty state */
-	PARSE_EOF = 1 << 0,	/* End Of File, end of parsing */
 	/* LINE KIND */
-	PARSE_H1  = 1 << 1,	/* Heading level 1 */
-	PARSE_H2  = 1 << 2,	/* Heading level 2 */
-	PARSE_H3  = 1 << 3,	/* Heading level 3 */
-	PARSE_P   = 1 << 4,	/* Regular text, paragraph */
-	PARSE_URL = 1 << 5,	/* URL link */
-	PARSE_DSC = 1 << 6,	/* URL description */
-	PARSE_ULI = 1 << 7,	/* Unordered list item */
-	PARSE_Q   = 1 << 8,	/* Quote */
-	PARSE_PRE = 1 << 9,	/* Preformatted text, no formatting */
+	PARSE_H1  = 1 << 0,	/* Heading level 1 */
+	PARSE_H2  = 1 << 1,	/* Heading level 2 */
+	PARSE_H3  = 1 << 2,	/* Heading level 3 */
+	PARSE_P   = 1 << 3,	/* Regular text, paragraph */
+	PARSE_URL = 1 << 4,	/* URL link */
+	PARSE_DSC = 1 << 5,	/* URL description */
+	PARSE_ULI = 1 << 6,	/* Unordered list item */
+	PARSE_Q   = 1 << 7,	/* Quote */
+	PARSE_PRE = 1 << 8,	/* Preformatted text, no formatting */
 	/* LINE INFO */
-	PARSE_BEG = 1 << 10,	/* Beginning of line */
-	PARSE_END = 1 << 11	/* End of line */
+	PARSE_BEG = 1 << 9,	/* Beginning of line */
+	PARSE_END = 1 << 10	/* End of line */
 } Parse;
 
 /*
