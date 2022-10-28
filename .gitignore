@@ -2,9 +2,12 @@
 *.o
 *.t
 *.gmi
+*.md
 *.html
 gmiu
 gmif
 gmic
-gmip
-gmi2html
+gmip2txt
+gmip2md
+gmip2html
+TAGS

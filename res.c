@@ -2,10 +2,10 @@
 
 #include "res.h"
 
-RES
+enum res
 res__code(char *buf)
 {
-	RES	res;		/* Response Status Code as enum */
+	enum res res;		/* Response Status Code as enum */
 
 	res = atoi(buf);
 

@@ -15,17 +15,18 @@ $CCF -c sb.c
 $CCF -c uri.c
 $CCF -c fetch.c
 $CCF -c res.c
-$CCF -c parse.c
+$CCF -c gmip.c
 
 # Compile and run tests
-$CCF -o str.t     str.t.c      str.o               && ./str.t
-$CCF -o sb.t      sb.t.c       sb.o                && ./sb.t
-$CCF -o uri.t     uri.t.c      uri.o sb.o str.o    && ./uri.t
-$CCF -o parse.t   parse.t.c    parse.o str.o       && ./parse.t
+$CCF -o str.t       str.t.c       str.o               && ./str.t
+$CCF -o sb.t        sb.t.c        sb.o                && ./sb.t
+$CCF -o uri.t       uri.t.c       uri.o sb.o str.o    && ./uri.t
+$CCF -o gmip.t      gmip.t.c      gmip.o str.o        && ./gmip.t
 
 # Compile programs
-$CCF -o gmiu      gmiu.c       util.o uri.o sb.o str.o
-$CCF -o gmif      gmif.c       util.o fetch.o $LIBSSL
-$CCF -o gmip      gmip.c       util.o parse.o str.o
-$CCF -o gmi2html  gmi2html.c   util.o parse.o str.o
-$CCF -o gmic      gmic.c       util.o uri.o sb.o str.o fetch.o $LIBSSL
+$CCF -o gmiu        gmiu.c        util.o uri.o sb.o str.o
+$CCF -o gmif        gmif.c        util.o fetch.o $LIBSSL
+$CCF -o gmip2txt    gmip2txt.c    util.o gmip.o str.o
+$CCF -o gmip2md     gmip2md.c     util.o gmip.o str.o
+$CCF -o gmip2html   gmip2html.c   util.o gmip.o str.o
+$CCF -o gmic        gmic.c        util.o uri.o sb.o str.o fetch.o $LIBSSL

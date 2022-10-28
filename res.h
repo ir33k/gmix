@@ -5,7 +5,7 @@
 
 /* Header Response Status Codes.  Some of them uses HTTP status codes
  * as a name because those are very common and easy to understand. */
-typedef enum {
+enum res {
 	RES_NUL    =  0,	/* Unknown status code */
 				/* 1x INPUT */
 	RES_IN     = 10,	/* Input, like search phrase */
@@ -36,6 +36,6 @@ typedef enum {
 /*
  * Get header line status code.  Return RES_NUL if invalid.
  */
-RES res__code(char *buf);
+enum res res__code(char *buf);
 
 #endif	/* RES_H_ */

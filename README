@@ -11,14 +11,16 @@ Programs:
 
 	$ ./gmiu	# URL parser
 	$ ./gmif	# Fetch URL
-	$ ./gmip	# Parse text/gemini                     /)_/)
-	$ ./gmi2html	# Parse text/gemini to HTML            (-.- )
+	$ ./gmip2txt	# Parse text/gemini to text
+	$ ./gmip2md	# Parse text/gemini to Markdown         /)_/)
+	$ ./gmip2html	# Parse text/gemini to HTML            (-.- )
 	$ ./gmic	# Client (interactive TUI)   WIP     (")(")_o
 
 Example of using programs together by passing parsed URL to fetch
 program and piping result through parser.
 
-	$ ./gmif $(./gmiu -f tilde.pink)   | ./gmip
-	$ ./gmif $(./gmiu -f rawtext.club) | ./gmi2html
+	$ ./gmif $(./gmiu -f tilde.pink)    | ./gmip2txt
+	$ ./gmif $(./gmiu -f heathens.club) | ./gmip2md
+	$ ./gmif $(./gmiu -f rawtext.club)  | ./gmip2html
 
 TODO Try one of simpler compilers: https://suckless.org/rocks/

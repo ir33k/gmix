@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+/* TODO(irek): That's a GNU extension, meybe not necessary. */
 #include <getopt.h>
 
 #include "util.h"
