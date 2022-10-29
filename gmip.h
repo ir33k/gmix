@@ -99,11 +99,6 @@ gmip__lt(char *str, FILE *fp)
 	}
 	str[++i] = '\0';
 
-	/* Note that EOF can occur in the at any moment while parsing
-	 * prefix.  In that case GMIP_P is returned because none other
-	 * line type is valid and we can have few last characters
-	 * before EOF that are shorter that some line prefixes. */
-
 	/**/ if (str[i-1] == EOF) return GMIP_NUL;
 	else if (str[i-1] == '>') return GMIP_Q;
 	else if (str[i-1] == '*') return GMIP_LI;
@@ -176,7 +171,7 @@ gmip(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		if (str[i-1] == EOF || ps->new == GMIP_NUL) {
 			ps->eol = EOF;
 			str[0] = 0;
-			return 0;
+			return 0; /* End parsing here */
 		}
 		/* Skip whitespaces  */
 		if ((str[i++] = gmip__fskip(fp, " \t")) == '\n') {
@@ -200,6 +195,13 @@ gmip(struct gmip *ps, char *str, size_t siz, FILE *fp)
 			str--;
 			continue;
 		}
+		/* We reached EOF but let's not end here because STR
+		 * migh still have some characters to print.  Just set
+		 * ps->eol with EOF so we can end parsing on in next
+		 * round. Otherwise if we are parsing PRE content
+		 * avoid ending on new line and end only on ```.
+		 * Otherwise always end line on new line character or
+		 * in case of URL also end on space or tab. */
 		if (str[i] == EOF) {
 			ps->eol = EOF;
 			break;
