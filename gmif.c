@@ -1,5 +1,7 @@
 /* Gemini Fetch - Get Gemini capsule (page) content. */
 #include <stdio.h>
+/* TODO(irek): That's a GNU extension, meybe not necessary. */
+#include <getopt.h>
 #define UTIL_IMPLEMENTATION
 #include "util.h"
 #define GMIF_IMPLEMENTATION
@@ -11,39 +13,29 @@
 #define BSIZ     2048		/* Buffer size */
 #define PORT    "1965"		/* Default Gemini port */
 
-/*
- * Print program usage instruction using provided progrm NAME.
- */
-void usage(char *name);
-
-void
-usage(char *name)
-{
-	printf("(GMI Fetch) Fetch Gemini server HOST:PORT with given URL.\n"
-	       "Server response with header is printed in stdout.\n\n"
-	       "\tusage: %s url host [port]\n\n"
-	       "PORT is optional, defaults to 1965.  There's no URL parsing\n"
-	       "or validation.  Which is great for precise test of server\n"
-	       "response.\n",
-	       name);
-}
-
 int
 main(int argc, char **argv)
 {
-	int siz;		/* Size of data or error code */
-	char buf[BSIZ];		/* Buffer for URL and output */
-	SSL *ssl;		/* TLS connection */
+	/* SIZ is size of data or error code.  BUF for URL and output.
+	 * SSL for TLS connection. */
+	int siz;
+	char buf[BSIZ];
+	SSL *ssl;
 
-	if (argc < 3) {
-		usage(argv[0]);
-		putchar('\n');
-		die("Missing argument");
+	if (getopt(argc, argv, "h") != -1 ||
+	    argc < 3) {
+		die("(GMI Fetch) Fetch Gemini server HOST:PORT with given URL.\n"
+		    "Server response with response header is printed in stdout.\n\n"
+		    "\tusage: %s url host [port]\n\n"
+		    "PORT is optional, defaults to 1965.  There's no URL parsing\n"
+		    "or validation.  Which is great for precise test of server\n"
+		    "response.\n",
+		    argv[0]);
 	}
-	gmif_init();
 	/* Build resource URL with required suffix \r\n. */
 	sprintf(buf, "%s\r\n", argv[1]);
-
+	/* Init GMIF, open connection and get response data. */
+	gmif_init();
 	if ((ssl = gmif_open(argv[2], argc > 3 ? argv[3] : PORT, buf)) == NULL) {
 		die("Can't open connection");
 	}

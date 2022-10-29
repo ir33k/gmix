@@ -20,12 +20,11 @@ main(int argc, char **argv)
 	FILE *fp = stdin;
 
 	if (getopt(argc, argv, "h") != -1) {
-		printf("GMI Parse 2 text - Parse Gemeni text.\n\n"
-		       "usage: %s [-h] [file]\n\n"
-		       "\t-h\tPrint this usage help message.\n"
-		       "\tfile\tFile to parse, use stdin by default.\n\n",
-		       argv[0]);
-		return 1;
+		die("Parse Gemini text in the simplest possible way.\n\n"
+		    "usage: %s [-h] [file]\n\n"
+		    "\t-h\tPrint this usage help message.\n"
+		    "\tfile\tFile to parse, use stdin by default.\n",
+		    argv[0]);
 	}
 	if (argc > 1) {
 		if ((fp = fopen(argv[1], "rb")) == NULL)

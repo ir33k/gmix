@@ -31,12 +31,11 @@ main(int argc, char **argv)
 	FILE *fp = stdin;
 
 	if (getopt(argc, argv, "h") != -1) {
-		printf("GMI parse 2 Markdown - Parse Gemeni text to Markdown.\n\n"
-		       "usage: %s [-h] [file]\n\n"
-		       "\t-h\tPrint this usage help message.\n"
-		       "\tfile\tFile to parse, use stdin by default.\n\n",
-		       argv[0]);
-		return 1;
+		die("Parse Gemeni text to Markdown.\n\n"
+		    "usage: %s [-h] [file]\n\n"
+		    "\t-h\tPrint this usage help message.\n"
+		    "\tfile\tFile to parse, use stdin by default.\n",
+		    argv[0]);
 	}
 	if (argc > 1) {
 		if ((fp = fopen(argv[1], "rb")) == NULL)

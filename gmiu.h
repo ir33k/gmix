@@ -319,29 +319,29 @@ gmiu_parse(struct gmiu_uri *uri, char *src)
 		*found = 0;	/* Cut off qstr from BP string */
 	}
 	/* Find protocol. */
-	if ((found = strstr(bp, "://")) == NULL) {
-		/* Use default protocol */
-		uri->prot = gmiu__sb_addn(&sb, GMIU_PROT, strlen(GMIU_PROT));
-	} else {
+	if ((found = strstr(bp, "://"))) {
 		uri->prot = gmiu__sb_addn(&sb, bp, found - bp);
 		bp = found + 3;
+	} else {
+		/* Use default protocol */
+		uri->prot = gmiu__sb_addn(&sb, GMIU_PROT, strlen(GMIU_PROT));
 	}
 	/* Find path.  With protocol ahd his :// out the way we can go
 	 * back to searching backwards which is easier. */
-	if ((found = strstr(bp, "/")) == NULL) {
-		/* Use default path */
-		uri->path = gmiu__sb_addn(&sb, GMIU_PATH, strlen(GMIU_PATH));
-	} else {
+	if ((found = strstr(bp, "/"))) {
 		uri->path = gmiu__sb_add(&sb, found);
 		*found = 0;	/* Cut off path from BP string */
+	} else {
+		/* Use default path */
+		uri->path = gmiu__sb_addn(&sb, GMIU_PATH, strlen(GMIU_PATH));
 	}
 	/* Find port. */
-	if ((found = strstr(bp, ":")) == NULL) {
-		/* Use default port */
-		uri->port = gmiu__sb_addn(&sb, GMIU_PORT, strlen(GMIU_PORT));
-	} else {
+	if ((found = strstr(bp, ":"))) {
 		uri->port = gmiu__sb_add(&sb, found+1);
 		*found = 0;	/* Cut off port from BP string */
+	} else {
+		/* Use default port */
+		uri->port = gmiu__sb_addn(&sb, GMIU_PORT, strlen(GMIU_PORT));
 	}
 	/* What remainds is host. */
 	if (strlen(bp) > 0) {
