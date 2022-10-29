@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _GNU_SOURCE		/* Needed for fmemopen */
 #include <stdio.h>
 #include "walter.h"
 #define GMIP_IMPLEMENTATION
@@ -10,7 +10,7 @@ TEST("All general parser cases")
 	char buf[8];
 	FILE *fp;
 
-	char *in = "20 text/gemini128\n\n"
+	char *in = "20 text/gemini128\r\n\n"
 		"#  \t\t  Title\n"
 		"##\t\t Sub title\n"
 		"### Sub sub title\n"
@@ -24,8 +24,8 @@ TEST("All general parser cases")
 		"=> host3.name/path\n"
 		"=> host4.name/path 	 link description 4\n"
 		"\n"
-		"* First list item   \n"
-		"* Second list item\n"
+		"*First list item   \n"
+		"*\t\t  Second list item\n"
 		"* Third list item\n"
 		"\n"
 		"Regular text 2\n"
