@@ -146,7 +146,6 @@ enum gmiu_parse gmiu_parse(struct gmiu_uri *uri, char *src);
 
 #endif	/* GMIU_H */
 #ifdef GMIU_IMPLEMENTATION
-#include <string.h>
 
 void
 gmiu__sb_init(struct gmiu__sb *sb, char *buf, size_t max)
