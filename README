@@ -13,7 +13,7 @@ Build all programs and run unit tests:
 
 	$ ./build       # Dependencies: stdlib and OpenSSL
 
-Programs:
+Programs (run with -h for help):
 
 	$ ./gmiu        # URL parser
 	$ ./gmif        # Fetch URL
