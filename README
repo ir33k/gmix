@@ -8,6 +8,7 @@ Single header libs:
 	gmiu.h          Parse, create and validate Gemini URI
 	gmif.h          Fetch Gemini URI server response
 	gmip.h          Parser Gemini text/gemini format
+	gmir.h          Parser Gemini response header     WIP  =^..^=
 
 Build all programs and run unit tests:
 
@@ -20,7 +21,7 @@ Programs (run with -h for help):
 	$ ./gmip        # Parse text/gemini, the simplest
 	$ ./gmip2md     # Parse text/gemini to Markdown         /)_/)
 	$ ./gmip2html   # Parse text/gemini to HTML            (-.- )
-	$ ./gmic        # Client, interactive TUI       WIP   (")(")_o
+	$ ./gmic        # Client, interactive TUI         WIP (")(")_o
 
 Examples of using programs together by passing parsed URL to fetch
 program and piping result through parser.
