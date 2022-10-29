@@ -1,26 +1,32 @@
-LIBS AND PROGRAMS FOR GEMINI PROTOCOL
+LIBS AND PROGRAMS FOR GEMINI INTERNET PROTOCOL
 
 Written in c89 for fun in NOT spare time instead of doing actual work
 AKA procrastination via programming.  Please, send help X__x
 
-Build and test all programs with script:
+Single header libs:
 
-	$ ./build	# Dependencies: stdlib and OpenSSL
+	gmiu.h          Parse, create and validate Gemini URI
+	gmif.h          Fetch Gemini URI server response
+	gmip.h          Parser Gemini text/gemini format
+
+Build all programs and run unit tests:
+
+	$ ./build       # Dependencies: stdlib and OpenSSL
 
 Programs:
 
-	$ ./gmiu	# URL parser
-	$ ./gmif	# Fetch URL
-	$ ./gmip2txt	# Parse text/gemini to text
-	$ ./gmip2md	# Parse text/gemini to Markdown         /)_/)
-	$ ./gmip2html	# Parse text/gemini to HTML            (-.- )
-	$ ./gmic	# Client (interactive TUI)   WIP     (")(")_o
+	$ ./gmiu        # URL parser
+	$ ./gmif        # Fetch URL
+	$ ./gmip        # Parse text/gemini, the simplest
+	$ ./gmip2md     # Parse text/gemini to Markdown         /)_/)
+	$ ./gmip2html   # Parse text/gemini to HTML            (-.- )
+	$ ./gmic        # Client, interactive TUI       WIP   (")(")_o
 
-Example of using programs together by passing parsed URL to fetch
+Examples of using programs together by passing parsed URL to fetch
 program and piping result through parser.
 
-	$ ./gmif $(./gmiu -f tilde.pink)    | ./gmip2txt
+	$ ./gmif $(./gmiu -f gemini.circumlunar.space) | ./gmip
 	$ ./gmif $(./gmiu -f heathens.club) | ./gmip2md
-	$ ./gmif $(./gmiu -f rawtext.club)  | ./gmip2html
+	$ ./gmif $(./gmiu -f rawtext.club) | ./gmip2html
 
 TODO Try one of simpler compilers: https://suckless.org/rocks/

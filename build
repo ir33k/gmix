@@ -1,32 +1,22 @@
 #!/usr/bin/env sh
-
-# Stop execution on first error
-set -e
+set -ex                   # Stop on first error and log all commands
 
 CC="cc"
 CFLAGS="-Wall -Wextra -Wshadow -Wmissing-declarations -Wswitch-enum -pedantic -std=c89"
-CCF="$CC $CFLAGS"
 LIBSSL="-lssl -lcrypto"
 
-# Build object files
-$CCF -c util.c
-$CCF -c str.c
-$CCF -c sb.c
-$CCF -c uri.c
-$CCF -c fetch.c
-$CCF -c res.c
-$CCF -c gmip.c
-
 # Compile and run tests
-$CCF -o str.t       str.t.c       str.o               && ./str.t
-$CCF -o sb.t        sb.t.c        sb.o                && ./sb.t
-$CCF -o uri.t       uri.t.c       uri.o sb.o str.o    && ./uri.t
-$CCF -o gmip.t      gmip.t.c      gmip.o str.o        && ./gmip.t
+$CC $CFLAGS -o gmiu.t   gmiu.t.c   && ./gmiu.t
+$CC $CFLAGS -o gmip.t   gmip.t.c   && ./gmip.t
 
 # Compile programs
-$CCF -o gmiu        gmiu.c        util.o uri.o sb.o str.o
-$CCF -o gmif        gmif.c        util.o fetch.o $LIBSSL
-$CCF -o gmip2txt    gmip2txt.c    util.o gmip.o str.o
-$CCF -o gmip2md     gmip2md.c     util.o gmip.o str.o
-$CCF -o gmip2html   gmip2html.c   util.o gmip.o str.o
-$CCF -o gmic        gmic.c        util.o uri.o sb.o str.o fetch.o $LIBSSL
+$CC $CFLAGS -o gmiu        gmiu.c
+$CC $CFLAGS -o gmip        gmip.c
+$CC $CFLAGS -o gmip2md     gmip2md.c
+$CC $CFLAGS -o gmip2html   gmip2html.c
+# -D_POSIX_C_SOURCE=200112L flag in compiler or this define below is
+# necessary to programs that include netdb.h, that is programs that
+# uses gmif.h because of problem with addrinfo struct of getaddrinfo.
+# And ofc we need to include links to lib ssl.
+$CC $CFLAGS -o gmif   gmif.c   $LIBSSL -D_POSIX_C_SOURCE=200112L
+$CC $CFLAGS -o gmic   gmic.c   $LIBSSL -D_POSIX_C_SOURCE=200112L

@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include "walter.h"
+#define GMIP_IMPLEMENTATION
 #include "gmip.h"
 
 TEST("All general parser cases")

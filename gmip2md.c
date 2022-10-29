@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
-
+#define UTIL_IMPLEMENTATION
 #include "util.h"
+#define GMIP_IMPLEMENTATION
 #include "gmip.h"
 
 #define URLSIZ  1024+1		/* Buffer size that can hold URL */

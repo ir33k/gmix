@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
-
+#define UTIL_IMPLEMENTATION
 #include "util.h"
+#define GMIP_IMPLEMENTATION
 #include "gmip.h"
 
 /* It's probably better to use default BUFSIZ value defined in stdio.h

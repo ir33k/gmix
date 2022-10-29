@@ -4,13 +4,12 @@
 #include <unistd.h>
 /* TODO(irek): That's a GNU extension, meybe not necessary. */
 #include <getopt.h>
-
+#define UTIL_IMPLEMENTATION
 #include "util.h"
-#include "uri.h"
+#define GMIU_IMPLEMENTATION
+#include "gmiu.h"
 
-/*
- * Print program usage instruction.  ARGV0 is program name.
- */
+/* Print program usage instruction.  ARGV0 is program name. */
 void usage(char *argv0);
 
 void
@@ -28,13 +27,13 @@ int
 main(int argc, char **argv)
 {
 	/* OPTF is to indicate if program was run with -f flag. */
-	Uri uri;
-	char opt;
 	int optf = 0;
+	char opt;
+	struct gmiu_uri uri;
 
-	if (argc < 2)
+	if (argc < 2) {
 		usage(argv[0]);
-
+	}
 	while ((opt = getopt(argc, argv, "fh")) != -1) {
 		switch (opt) {
 		case 'f':
@@ -45,12 +44,10 @@ main(int argc, char **argv)
 			usage(argv[0]);
 		}
 	}
-
-	switch (uri_parse(&uri, argv[argc-1])) {
-	case URI_PARSE_OK: break;
-	case URI_PARSE_TOO_LONG: die("Parsed URI is too long");
+	switch (gmiu_parse(&uri, argv[argc-1])) {
+	case GMIU_PARSE_OK: break;
+	case GMIU_PARSE_TOO_LONG: die("Parsed URI is too long");
 	}
-
 	/* Print output for gmif program if -f option was provided. */
 	if (optf) {
 		printf("%s %s %s",
@@ -59,7 +56,6 @@ main(int argc, char **argv)
 		       uri.port ? uri.port : "");
 		return 0;	/* End here */
 	}
-
 	/* Else print everything. */
 	printf("%s\n", uri.url);
 	printf("%s\n", uri.prot ? uri.prot : "");
@@ -67,6 +63,5 @@ main(int argc, char **argv)
 	printf("%s\n", uri.port ? uri.port : "");
 	printf("%s\n", uri.path ? uri.path : "");
 	printf("%s\n", uri.qstr ? uri.qstr : "");
-
 	return 0;
 }

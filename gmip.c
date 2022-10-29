@@ -1,170 +1,59 @@
+/* Parse text/gemini text format so lines are prefixed with type. */
+
 #include <stdio.h>
-#include <assert.h>
-#include <string.h>
+#include <getopt.h>
+#define UTIL_IMPLEMENTATION
+#include "util.h"
+#define GMIP_IMPLEMENTATION
 #include "gmip.h"
 
-int
-gmip__fskip(FILE *fp, char *skip)
-{
-	int i, c;
+/* Small buffer size is used to test how well parse.h deals with lines
+ * delivered in multiple parts. */
 
-	while ((c = fgetc(fp))) {
-		for (i = 0; skip[i] != '\0'; i++) {
-			if (c == skip[i])
-				break;
-		}
-		if (skip[i] == '\0')
-			break;
-	}
-	return c;
-}
-
-enum gmip_lt
-gmip__lt(char *str, FILE *fp)
-{
-	size_t i = 0;		/* STR index */
-
-	/* Skip empty lines with whitespaces and leading whitespaces
-	 * in paragraphs. */
-	while (1) {
-		str[i] = gmip__fskip(fp, "\n");
-		if (str[i] != ' ' && str[i] != '\t') {
-			break;
-		}
-		str[i] = gmip__fskip(fp, " \t");
-		if (str[i] != '\n') {
-			str[++i] = '\0';
-			return GMIP_P;
-		}
-	}
-	str[++i] = '\0';
-
-	/* Note that EOF can occur in the at any moment while parsing
-	 * prefix.  In that case GMIP_P is returned because none other
-	 * line type is valid and we can have few last characters
-	 * before EOF that are shorter that some line prefixes. */
-
-	/**/ if (str[i-1] == EOF) return GMIP_NUL;
-	else if (str[i-1] == '>') return GMIP_Q;
-	else if (str[i-1] == '*') return GMIP_LI;
-
-	str[i] = fgetc(fp);
-	str[++i] = '\0';
-	if (str[i-1] == EOF || str[i-1] == '\n') return GMIP_P;
-
-	/**/ if (!strcmp(str, "# "))  return GMIP_H1;
-	else if (!strcmp(str, "#\t")) return GMIP_H1;
-	else if (!strcmp(str, "=>"))  return GMIP_URL;
-
-	str[i] = fgetc(fp);
-	str[++i] = '\0';
-	if (str[i-1] == EOF || str[i-1] == '\n') return GMIP_P;
-
-	/**/ if (!strcmp(str, "## "))  return GMIP_H2;
-	else if (!strcmp(str, "##\t")) return GMIP_H2;
-	else if (!strcmp(str, "```"))  return GMIP_PRE;
-
-	str[i] = fgetc(fp);
-	str[++i] = '\0';
-	if (str[i-1] == EOF || str[i-1] == '\n') return GMIP_P;
-
-	/**/ if (!strcmp(str, "### "))  return GMIP_H3;
-	else if (!strcmp(str, "###\t")) return GMIP_H3;
-
-	return GMIP_P;
-}
+#define BSIZ	8		/* Buffer size */
 
 int
-gmip(struct gmip *ps, char *str, size_t siz, FILE *fp)
+main(int argc, char **argv)
 {
-	size_t i = 0;
+	struct gmip ps = {0};
+	char str[BSIZ];
+	FILE *fp = stdin;
 
-	/* STR needs to fit at least 5 bytes to fit the longest
-	 * possible line prefix with NUL terminator. */
-	assert(siz > 5);
-
-	str[0] = 0;
-	ps->beg = 0;
-	if (ps->eol) {
-		if (ps->eol == EOF) {
-			return 0; /* End parsing here */
-		}
-		ps->old = ps->new;
-		ps->new = 0;
+	if (getopt(argc, argv, "h") != -1) {
+		printf("GMI Parse 2 text - Parse Gemeni text.\n\n"
+		       "usage: %s [-h] [file]\n\n"
+		       "\t-h\tPrint this usage help message.\n"
+		       "\tfile\tFile to parse, use stdin by default.\n\n",
+		       argv[0]);
+		return 1;
 	}
-	/* Get NEW line type. */
-	if (!ps->new) {
-		ps->beg = 1;
-		/* When previous type was URL then next one is always
-		 * DSC, no matter if it's empty or not.  Otherwise we
-		 * search for new line type with gmip__lt. */
-		if (ps->old == GMIP_URL) {
-			ps->new = GMIP_DSC;
-			if (ps->eol == '\n') {
-				return 1;
+	if (argc > 1) {
+		if ((fp = fopen(argv[1], "rb")) == NULL)
+			die("fopen:");
+	}
+	while (gmip(&ps, str, BSIZ, fp)) {
+		if (ps.beg) {
+			switch (ps.new) {
+			case GMIP_NUL: break;
+			case GMIP_H1:  printf("h1");  break;
+			case GMIP_H2:  printf("h2");  break;
+			case GMIP_H3:  printf("h3");  break;
+			case GMIP_P:   printf("p");   break;
+			case GMIP_URL: printf("url"); break;
+			case GMIP_DSC: printf("dsc"); break;
+			case GMIP_LI:  printf("li");  break;
+			case GMIP_Q:   printf("q");   break;
+			case GMIP_PRE: printf("pre"); break;
 			}
-		} else {
-			ps->new = gmip__lt(str, fp);
+			putchar('\t');
 		}
-		ps->eol = 0;
-		/* In case of paragraph there are already some
-		 * characters in STR that we wan't to preserve. */
-		if (ps->new == GMIP_P) {
-			i = strlen(str);
-		}
-		/* End parsing on EOF or NUL (those are the same). */
-		if (str[i-1] == EOF || ps->new == GMIP_NUL) {
-			ps->eol = EOF;
-			str[0] = 0;
-			return 0;
-		}
-		/* Skip whitespaces  */
-		if ((str[i++] = gmip__fskip(fp, " \t")) == '\n') {
-			if (ps->new == GMIP_PRE) {
-				i = 0;
-			} else {
-				ps->eol = '\n';
-				str[0] = 0;
-				return 1;
-			}
+		fputs(str, stdout);
+		if (ps.eol) {
+			putchar('\n');
 		}
 	}
-	/* Fill STR with line content as much as possible.  Mark end
-	 * of line based of line kind. */
-	siz--;			/* Make space ofr \0 */
-	for (; i < siz; i++) {
-		str[i] = fgetc(fp);
-		/* Ignore '\r' character.  It appears at the end of
-		 * response header line and makes printing broken. */
-		if (str[i] == '\r') {
-			str--;
-			continue;
-		}
-		if (str[i] == EOF) {
-			ps->eol = EOF;
-			break;
-		} else if (ps->new == GMIP_PRE) {
-			if (str[i] == '\n') {
-				i++;
-				break;
-			}
-			if (i == 2 && !strncmp(str, "```", 3)) {
-				i = 0;
-				ps->eol = '`';
-				break;
-			}
-		} else if ((str[i] == '\n') ||
-			   (ps->new == GMIP_URL &&
-			    (str[i] == ' ' || str[i] == '\t'))) {
-			ps->eol = str[i];
-			break;
-		}
+	if (fp != stdin && fclose(fp) == EOF) {
+		die("fclose:");
 	}
-	/* Trim STR from spaces and tabs at the end. */
-	if (ps->eol) {
-		while (--i > 0 && (str[i] == ' ' || str[i] == '\t'));
-		i++;
-	}
-	str[i] = 0;
-	return 1;
+	return 0;
 }
