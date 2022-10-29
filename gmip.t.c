@@ -459,7 +459,7 @@ TEST("All general parser cases")
 	/* EOF */
 	OK(!gmip(&ps, buf, 8, fp));
 	OK(ps.old == GMIP_P);
-	OK(ps.new == GMIP_P);
+	OK(ps.new == GMIP_NUL);
 	OK(ps.beg == 1);
 	OK(ps.eol == EOF);
 	STR_EQ(&buf[0], "");

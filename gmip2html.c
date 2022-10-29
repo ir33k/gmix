@@ -49,20 +49,21 @@ main(int argc, char **argv)
 		if ((fp = fopen(argv[1], "rb")) == NULL)
 			die("fopen:");
 	}
-	while (gmip(&ps, str, BSIZ, fp)) {
-		/* Open or close tag groups when old and new status
-		 * differs between parsing iterations. */
-		if (ps.new == GMIP_URL && ps.old != GMIP_DSC) {
-			printf("<ul class=\"links\">\n");
-		} else if (ps.new == GMIP_LI && ps.old != GMIP_LI) {
-			printf("<ul>\n");
-		} else if (ps.new != GMIP_LI && ps.old == GMIP_LI) {
-			printf("</ul>\n");
-		} else if (ps.new != GMIP_URL && ps.old == GMIP_DSC) {
-			printf("</ul>\n");
-		}
-		/* Open tag. */
+	while (1) {
+		gmip(&ps, str, BSIZ, fp);
+		/* Open tag when line just started. */
 		if (ps.beg) {
+			/* Open or close tag groups. */
+			if (ps.new == GMIP_URL && ps.old != GMIP_DSC) {
+				printf("<ul class=\"links\">\n");
+			} else if (ps.new == GMIP_LI && ps.old != GMIP_LI) {
+				printf("<ul>\n");
+			} else if (ps.new != GMIP_LI && ps.old == GMIP_LI) {
+				printf("</ul>\n");
+			} else if (ps.new != GMIP_URL && ps.old == GMIP_DSC) {
+				printf("</ul>\n");
+			}
+			/* Open line tag. */
 			switch (ps.new) {
 			case GMIP_NUL: break;
 			case GMIP_H1:  printf("<h1>"); break;
@@ -85,6 +86,9 @@ main(int argc, char **argv)
 		fputs(str, stdout);
 		/* Close tag on End Of Line. */
 		if (ps.eol) {
+			if (ps.eol == EOF) {
+				break;
+			}
 			switch (ps.new) {
 			case GMIP_NUL: break;
 			case GMIP_H1:  printf("</h1>"); break;
@@ -97,14 +101,14 @@ main(int argc, char **argv)
 			case GMIP_Q:   printf("</blockquote>"); break;
 			case GMIP_PRE: printf("</pre>"); break;
 			}
+			/* Avoid adding new line after URL because
+			 * next one will be DSC and we wont to have
+			 * them in the same line. */
 			if (ps.new != GMIP_URL) {
 				putchar('\n');
 			}
 		}
 	}
-	/* TODO(irek): Blocks of <ul> for links and lists are not
-	 * closed after EOF.  This does not make HTML broken but it
-	 * would be nicer if blocks are always closed. */
 	if (fp != stdin && fclose(fp) == EOF) {
 		die("fclose:");
 	}

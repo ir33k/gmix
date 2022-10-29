@@ -16,6 +16,7 @@
  * like to replace it with something else.  I don't know if I'm
  * capable of writing my own code that deals with all of that what is
  * required for Gemini.  I might investigate this problem later. */
+/* TODO(irek): I could switch to smaller OpenBSD fork - LibreSSl. */
 #include <openssl/ssl.h>
 
 #include "fetch.h"

@@ -44,7 +44,7 @@ gmip__lt(char *str, FILE *fp)
 	 * line type is valid and we can have few last characters
 	 * before EOF that are shorter that some line prefixes. */
 
-	/**/ if (str[i-1] == EOF) return GMIP_P;
+	/**/ if (str[i-1] == EOF) return GMIP_NUL;
 	else if (str[i-1] == '>') return GMIP_Q;
 	else if (str[i-1] == '*') return GMIP_LI;
 
@@ -112,7 +112,8 @@ gmip(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		if (ps->new == GMIP_P) {
 			i = strlen(str);
 		}
-		if (str[i-1] == EOF) {
+		/* End parsing on EOF or NUL (those are the same). */
+		if (str[i-1] == EOF || ps->new == GMIP_NUL) {
 			ps->eol = EOF;
 			str[0] = 0;
 			return 0;
