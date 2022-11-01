@@ -7,10 +7,9 @@
 #define GMIP_IMPLEMENTATION
 #include "gmip.h"
 
-/* Small buffer size is used to test how well parse.h deals with lines
- * delivered in multiple parts. */
-
-#define BSIZ	8		/* Buffer size */
+/* Small buffer size is used to test how well gmip.h deals with lines
+ * delivered in multiple parts (stream fashion). */
+#define BSIZ	8
 
 int
 main(int argc, char **argv)
@@ -26,11 +25,11 @@ main(int argc, char **argv)
 		    "\tfile\tFile to parse, use stdin by default.\n",
 		    argv[0]);
 	}
-	if (argc > 1) {
-		if ((fp = fopen(argv[1], "rb")) == NULL)
-			die("fopen:");
+	if (argc > 1 && (fp = fopen(argv[1], "rb")) == NULL) {
+		die("fopen:");
 	}
-	while (gmip(&ps, str, BSIZ, fp)) {
+	while (gmip_get(&ps, str, BSIZ, fp)) {
+		/* Print line prefix when line starts. */
 		if (ps.beg) {
 			switch (ps.new) {
 			case GMIP_NUL: break;
@@ -44,9 +43,16 @@ main(int argc, char **argv)
 			case GMIP_Q:   printf("q");   break;
 			case GMIP_PRE: printf("pre"); break;
 			}
+			/* Separate prifix from content with tab. */
 			putchar('\t');
+			/* Print last URL as DSC when DSC is empty. */
+			if (ps.new == GMIP_DSC && strlen(str) == 0) {
+				fputs(ps.url, stdout);
+			}
 		}
+		/* Print line content. */
 		fputs(str, stdout);
+		/* Put new line on Enf Of Line. */
 		if (ps.eol) {
 			putchar('\n');
 		}

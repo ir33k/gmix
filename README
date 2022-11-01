@@ -7,8 +7,8 @@ Single header libs:
 
 	gmiu.h          Parse, create and validate Gemini URI
 	gmif.h          Fetch Gemini URI server response
-	gmip.h          Parser Gemini text/gemini format
-	gmir.h          Parser Gemini response header     WIP  =^..^=
+	gmip.h          Parse text/gemini to: text, HTML, Markdown
+	gmir.h          Parse Gemini response header      WIP  =^..^=
 
 Build all programs and run unit tests:
 
