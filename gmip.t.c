@@ -520,8 +520,94 @@ TEST("gmip_get: EOF paragraph without last new line character")
 	OK(!gmip_get(&ps, bp, 8, fp));
 }
 
-TODO("gmip_2stdout")
+TEST("gmip_2stdout")
 {
+	struct gmip ps = {0}; /* Parse State */
+	char buf[256], *bp = buf;
+	FILE *fp;
+
+	char *in = "20 text/gemini128\r\n\n"
+		"#  \t\t  Title\n"
+		"##\t\t Sub title\n"
+		"### Sub sub title\n"
+		"\n"
+		"  \t\t  \n"
+		"\n"
+		" \t\t  Regular text\n"
+		"\n"
+		"=> host1.name/path link description 1 \t\n"
+		"=> host2.name/path  \t\t  \n"
+		"=> host3.name/path\n"
+		"=> host4.name/path 	 link description 4\n"
+		"\n"
+		"*First list item   \n"
+		"*\t\t  Second list item\n"
+		"* Third list item\n"
+		"\n"
+		"Regular text 2\n"
+		"\n"
+		"> Quote text\t  \n"
+		"\n"
+		"``` pre header\t\n"
+		"    pre content   \n"
+		"```\n"
+		"```\n"
+		"    pre content   \n"
+		"```\n"
+		"\n"
+		"End Of Line\n";
+
+	if ((fp = fmemopen(in, strlen(in), "rb")) == NULL)
+		ASSERT(0, "ERR: fmemopen");
+
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "p\t20 text/gemini128\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "h1\tTitle\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "h2\tSub title\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "h3\tSub sub title\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "p\tRegular text\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "url\thost1.name/path\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "dsc\tlink description 1\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "url\thost2.name/path\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "dsc\thost2.name/path\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "url\thost3.name/path\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "dsc\thost3.name/path\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "url\thost4.name/path\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "dsc\tlink description 4\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "li\tFirst list item\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "li\tSecond list item\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "li\tThird list item\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "p\tRegular text 2\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "q\tQuote text\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "pre\tpre header\t\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "    pre content   \n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "pre\t    pre content   \n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "\n");
+	OK(gmip_2stdout(&ps, bp, 256, fp));
+	STR_EQ(bp, "p\tEnd Of Line\n");
 }
 
 TEST("gmip_2md")

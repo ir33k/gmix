@@ -317,6 +317,10 @@ gmip_2stdout(struct gmip *ps, char *str, size_t siz, FILE *fp)
 	res = gmip_get(ps, str, siz-GMIP__2STDOUT_PAD, fp);
 	/* Print line prefix when line starts. */
 	if (ps->beg) {
+		/* Print last URL as DSC when DSC is empty. */
+		if (ps->new == GMIP_DSC && strlen(str) == 0) {
+			gmip__prepend(str, siz, ps->url);
+		}
 		/* Separate prifix from content with tab. */
 		gmip__prepend(str, siz, "\t");
 		/* Print prefix. */
@@ -331,10 +335,6 @@ gmip_2stdout(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		case GMIP_LI:  gmip__prepend(str, siz, "li");  break;
 		case GMIP_Q:   gmip__prepend(str, siz, "q");   break;
 		case GMIP_PRE: gmip__prepend(str, siz, "pre"); break;
-		}
-		/* Print last URL as DSC when DSC is empty. */
-		if (ps->new == GMIP_DSC && strlen(str) == 0) {
-			gmip__prepend(str, siz, ps->url);
 		}
 	}
 	/* Put new line on Enf Of Line. */
