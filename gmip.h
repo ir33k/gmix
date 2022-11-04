@@ -9,6 +9,7 @@
 
 #define GMIP__URL_MAX       1024+1 /* GMI URL max length */
 #define GMIP__MIN_PREF      5      /* Min prefix size + null */
+#define GMIP__2GMI_PAD      5      /* Padding for text/gemini prefixes */
 #define GMIP__2STDOUT_PAD   8      /* Padding for stdout prefixes */
 #define GMIP__2MD_PAD       6      /* Padding for Markdown */
 #define GMIP__2HTML_PAD     46     /* Padding for HTML tags */
@@ -71,6 +72,12 @@ enum gmip_lt gmip__lt(char *str, FILE *fp);
  * end of line character if end of parsed line was reached.  Returns
  * non 0 value as long as something was parsed. */
 int gmip_get(struct gmip *ps, char *str, size_t siz, FILE *fp);
+
+/* Same as gmip_get except that STR will be parsed back to text/gemini
+ * format.  This will essentially normalize all lines by removing
+ * empty lines, removing unnecessary white spaces and adding missing
+ * white spaces. */
+int gmip_2gmi(struct gmip *ps, char *str, size_t siz, FILE *fp);
 
 /* Same as gmip_get except that STR will be filled with strings that
  * is already prepared to be printed in standard output with new line
@@ -305,6 +312,40 @@ gmip_get(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		gmip__append(ps->url, GMIP__URL_MAX, str);
 	}
 	return 1;
+}
+
+int
+gmip_2gmi(struct gmip *ps, char *str, size_t siz, FILE *fp)
+{
+	int res;
+
+	/* STR has to be long enough to fit longest gmi prefix. */
+	assert(siz > GMIP__2GMI_PAD);
+	res = gmip_get(ps, str, siz-GMIP__2GMI_PAD, fp);
+	/* Print line prefix when line starts. */
+	if (ps->beg) {
+		/* Print prefix. */
+		switch (ps->new) {
+		case GMIP_NUL: break;
+		case GMIP_H1:  gmip__prepend(str, siz, "# ");   break;
+		case GMIP_H2:  gmip__prepend(str, siz, "## ");  break;
+		case GMIP_H3:  gmip__prepend(str, siz, "### "); break;
+		case GMIP_P:   break;
+		case GMIP_URL: gmip__prepend(str, siz, "=> ");  break;
+		case GMIP_DSC: if (strlen(str)) gmip__prepend(str, siz, " "); break;
+		case GMIP_LI:  gmip__prepend(str, siz, "* ");   break;
+		case GMIP_Q:   gmip__prepend(str, siz, "> ");   break;
+		case GMIP_PRE: gmip__prepend(str, siz, "``` ");  break;
+		}
+	}
+	/* Put new line on Enf Of Line. */
+	if (ps->eol && ps->new != GMIP_URL) {
+		if (ps->eol == '`') {
+			gmip__append(str, siz, "```");
+		}
+		gmip__append(str, siz, "\n");
+	}
+	return res;
 }
 
 int
