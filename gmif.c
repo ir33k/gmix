@@ -1,6 +1,5 @@
 /* Gemini Fetch - Get Gemini capsule (page) content. */
 #include <stdio.h>
-/* TODO(irek): That's a GNU extension, meybe not necessary. */
 #include <getopt.h>
 #define UTIL_IMPLEMENTATION
 #include "util.h"

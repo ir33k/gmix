@@ -10,7 +10,7 @@
 #define GMIP__URL_MAX       1024+1 /* GMI URL max length */
 #define GMIP__MIN_PREF      5      /* Min prefix size + null */
 #define GMIP__2GMI_PAD      5      /* Padding for text/gemini prefixes */
-#define GMIP__2STDOUT_PAD   8      /* Padding for stdout prefixes */
+#define GMIP__2STD_PAD      8      /* Padding for stdout prefixes */
 #define GMIP__2MD_PAD       6      /* Padding for Markdown */
 #define GMIP__2HTML_PAD     46     /* Padding for HTML tags */
 
@@ -83,7 +83,7 @@ int gmip_2gmi(struct gmip *ps, char *str, size_t siz, FILE *fp);
  * is already prepared to be printed in standard output with new line
  * characters at the end of each line and line type prefixes.  It
  * implements the simplest possible way of using gmip_get. */
-int gmip_2stdout(struct gmip *ps, char *str, size_t siz, FILE *fp);
+int gmip_2std(struct gmip *ps, char *str, size_t siz, FILE *fp);
 
 /* Same as gmip_get except that STR will be filled with strings
  * already parsed to Markdown. */
@@ -349,13 +349,13 @@ gmip_2gmi(struct gmip *ps, char *str, size_t siz, FILE *fp)
 }
 
 int
-gmip_2stdout(struct gmip *ps, char *str, size_t siz, FILE *fp)
+gmip_2std(struct gmip *ps, char *str, size_t siz, FILE *fp)
 {
 	int res;
 
 	/* STR has to be long enough to fit longest stdout prefix. */
-	assert(siz > GMIP__2STDOUT_PAD);
-	res = gmip_get(ps, str, siz-GMIP__2STDOUT_PAD, fp);
+	assert(siz > GMIP__2STD_PAD);
+	res = gmip_get(ps, str, siz-GMIP__2STD_PAD, fp);
 	/* Print line prefix when line starts. */
 	if (ps->beg) {
 		/* Print last URL as DSC when DSC is empty. */

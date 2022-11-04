@@ -8,26 +8,24 @@ Single header libs:
 	gmiu.h          Parse, create and validate Gemini URI
 	gmif.h          Fetch Gemini URI server response
 	gmip.h          Parse text/gemini to: text, HTML, Markdown
-	gmir.h          Parse Gemini response header      WIP  =^..^=
+	gmir.h          Parse Gemini response header             WIP
 
 Build all programs and run unit tests:
 
-	$ ./build       # Dependencies: stdlib and OpenSSL
-
-Programs (run with -h for help):
+	$ ./build       # Dependencies: stdlib and OpenSSL     /)_/)
+							      (-.- )
+Programs (run with -h for help):                            (")(")_o
 
 	$ ./gmiu        # URL parser
 	$ ./gmif        # Fetch URL
-	$ ./gmip        # Parse text/gemini, the simplest
-	$ ./gmip2md     # Parse text/gemini to Markdown         /)_/)
-	$ ./gmip2html   # Parse text/gemini to HTML            (-.- )
-	$ ./gmic        # Client, interactive TUI         WIP (")(")_o
+	$ ./gmip        # Parse text/gemini to gmi/std/md/html
+	$ ./gmic        # Client, interactive TUI                WIP
 
 Examples of using programs together by passing parsed URL to fetch
 program and piping result through parser.
 
-	$ ./gmif $(./gmiu -f gemini.circumlunar.space) | ./gmip
-	$ ./gmif $(./gmiu -f heathens.club) | ./gmip2md
-	$ ./gmif $(./gmiu -f rawtext.club) | ./gmip2html
+	$ ./gmif $(./gmiu -f tilde.pink)    | ./gmip
+	$ ./gmif $(./gmiu -f heathens.club) | ./gmip -f md
+	$ ./gmif $(./gmiu -f rawtext.club)  | ./gmip -f html
 
 TODO Try one of simpler compilers: https://suckless.org/rocks/
