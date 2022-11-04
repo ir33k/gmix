@@ -608,6 +608,7 @@ TEST("gmip_2stdout")
 	STR_EQ(bp, "\n");
 	OK(gmip_2stdout(&ps, bp, 256, fp));
 	STR_EQ(bp, "p\tEnd Of Line\n");
+	OK(!gmip_2stdout(&ps, bp, 256, fp));
 }
 
 TEST("gmip_2md")
@@ -698,6 +699,7 @@ TEST("gmip_2md")
 	STR_EQ(bp, "```\n\n");
 	OK(gmip_2md(&ps, bp, 256, fp));
 	STR_EQ(bp, "End Of Line\n\n");
+	OK(!gmip_2md(&ps, bp, 256, fp));
 }
 
 TEST("gmip_2html")
@@ -788,4 +790,5 @@ TEST("gmip_2html")
 	STR_EQ(bp, "</pre>\n");
 	OK(gmip_2html(&ps, bp, 256, fp));
 	STR_EQ(bp, "<p>End Of Line</p>\n");
+	OK(!gmip_2html(&ps, bp, 256, fp));
 }
