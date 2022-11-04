@@ -520,7 +520,7 @@ TEST("gmip_get: EOF paragraph without last new line character")
 	OK(!gmip_get(&ps, bp, 8, fp));
 }
 
-TEST("gmip_2html: general cases")
+TEST("gmip_2html")
 {
 	struct gmip ps = {0}; /* Parse State */
 	char buf[256], *bp = buf;
@@ -610,7 +610,92 @@ TEST("gmip_2html: general cases")
 	STR_EQ(bp, "<p>End Of Line</p>\n");
 }
 
-TODO("gmip_2md: general cases")
+TEST("gmip_2md")
 {
-	/* TODO(irek): Add tests for Markdown parse function. */
+	struct gmip ps = {0}; /* Parse State */
+	char buf[256], *bp = buf;
+	FILE *fp;
+
+	char *in = "20 text/gemini128\r\n\n"
+		"#  \t\t  Title\n"
+		"##\t\t Sub title\n"
+		"### Sub sub title\n"
+		"\n"
+		"  \t\t  \n"
+		"\n"
+		" \t\t  Regular text\n"
+		"\n"
+		"=> host1.name/path link description 1 \t\n"
+		"=> host2.name/path  \t\t  \n"
+		"=> host3.name/path\n"
+		"=> host4.name/path 	 link description 4\n"
+		"\n"
+		"*First list item   \n"
+		"*\t\t  Second list item\n"
+		"* Third list item\n"
+		"\n"
+		"Regular text 2\n"
+		"\n"
+		"> Quote text\t  \n"
+		"\n"
+		"``` pre header\t\n"
+		"    pre content   \n"
+		"```\n"
+		"```\n"
+		"    pre content   \n"
+		"```\n"
+		"\n"
+		"End Of Line\n";
+
+	if ((fp = fmemopen(in, strlen(in), "rb")) == NULL)
+		ASSERT(0, "ERR: fmemopen");
+
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "20 text/gemini128\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "# Title\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "## Sub title\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "### Sub sub title\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "Regular text\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "- [link description 1](host1.name/path)\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "- [host2.name/path](host2.name/path)\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "- [host3.name/path](host3.name/path)\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "- [link description 4](host4.name/path)\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "\n- First list item\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "- Second list item\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "- Third list item\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "\nRegular text 2\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "> Quote text\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "```\npre header\t\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "    pre content   \n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "```\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "```\n    pre content   \n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "```\n\n");
+	OK(gmip_2md(&ps, bp, 256, fp));
+	STR_EQ(bp, "End Of Line\n\n");
 }

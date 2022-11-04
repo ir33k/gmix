@@ -28,6 +28,7 @@ main(int argc, char **argv)
 	if (argc > 1 && (fp = fopen(argv[1], "rb")) == NULL) {
 		die("fopen:");
 	}
+	/* TODO(irek): Combine all parsers in single program. */
 	while (gmip_get(&ps, str, BSIZ, fp)) {
 		/* Print line prefix when line starts. */
 		if (ps.beg) {

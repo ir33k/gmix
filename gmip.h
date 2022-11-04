@@ -374,13 +374,6 @@ gmip_2md(struct gmip *ps, char *str, size_t siz, FILE *fp)
 	if (ps->new == GMIP_URL) {
 		str[0] = 0;
 	}
-	/* Add extra empty line after block of links and block
-	 * of list items.  By compering new to old line type
-	 * we can detect changes in line blocks. */
-	if ((ps->new != GMIP_URL && ps->old == GMIP_DSC) ||
-	    (ps->new != GMIP_LI  && ps->old == GMIP_LI)) {
-		gmip__prepend(str, siz, "\n");
-	}
 	/* Open line type. */
 	if (ps->beg) {
 		switch (ps->new) {
@@ -395,6 +388,13 @@ gmip_2md(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		case GMIP_Q:   gmip__prepend(str, siz, "> "); break;
 		case GMIP_PRE: gmip__prepend(str, siz, "```\n"); break;
 		}
+	}
+	/* Add extra empty line after block of links and block of list
+	 * items.  By compering new to old line type we can detect
+	 * changes in line blocks. */
+	if ((ps->new != GMIP_URL && ps->old == GMIP_DSC) ||
+	    (ps->new != GMIP_LI  && ps->old == GMIP_LI)) {
+		gmip__prepend(str, siz, "\n");
 	}
 	if (ps->eol) {
 		if (ps->new == GMIP_DSC) {
