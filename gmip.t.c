@@ -520,94 +520,8 @@ TEST("gmip_get: EOF paragraph without last new line character")
 	OK(!gmip_get(&ps, bp, 8, fp));
 }
 
-TEST("gmip_2html")
+TODO("gmip_2stdout")
 {
-	struct gmip ps = {0}; /* Parse State */
-	char buf[256], *bp = buf;
-	FILE *fp;
-
-	char *in = "20 text/gemini128\r\n\n"
-		"#  \t\t  Title\n"
-		"##\t\t Sub title\n"
-		"### Sub sub title\n"
-		"\n"
-		"  \t\t  \n"
-		"\n"
-		" \t\t  Regular text\n"
-		"\n"
-		"=> host1.name/path link description 1 \t\n"
-		"=> host2.name/path  \t\t  \n"
-		"=> host3.name/path\n"
-		"=> host4.name/path 	 link description 4\n"
-		"\n"
-		"*First list item   \n"
-		"*\t\t  Second list item\n"
-		"* Third list item\n"
-		"\n"
-		"Regular text 2\n"
-		"\n"
-		"> Quote text\t  \n"
-		"\n"
-		"``` pre header\t\n"
-		"    pre content   \n"
-		"```\n"
-		"```\n"
-		"    pre content   \n"
-		"```\n"
-		"\n"
-		"End Of Line\n";
-
-	if ((fp = fmemopen(in, strlen(in), "rb")) == NULL)
-		ASSERT(0, "ERR: fmemopen");
-
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<p>20 text/gemini128</p>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<h1>Title</h1>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<h2>Sub title</h2>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<h3>Sub sub title</h3>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<p>Regular text</p>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<ol>\n<li><a href=\"host1.name/path\">");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "link description 1</a></li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<li><a href=\"host2.name/path\">");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "host2.name/path</a></li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<li><a href=\"host3.name/path\">");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "host3.name/path</a></li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<li><a href=\"host4.name/path\">");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "link description 4</a></li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "</ol>\n<ul>\n<li>First list item</li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<li>Second list item</li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<li>Third list item</li>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "</ul>\n<p>Regular text 2</p>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<blockquote>Quote text</blockquote>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<pre>pre header\t\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "    pre content   \n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "</pre>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<pre>    pre content   \n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "</pre>\n");
-	OK(gmip_2html(&ps, bp, 256, fp));
-	STR_EQ(bp, "<p>End Of Line</p>\n");
 }
 
 TEST("gmip_2md")
@@ -698,4 +612,94 @@ TEST("gmip_2md")
 	STR_EQ(bp, "```\n\n");
 	OK(gmip_2md(&ps, bp, 256, fp));
 	STR_EQ(bp, "End Of Line\n\n");
+}
+
+TEST("gmip_2html")
+{
+	struct gmip ps = {0}; /* Parse State */
+	char buf[256], *bp = buf;
+	FILE *fp;
+
+	char *in = "20 text/gemini128\r\n\n"
+		"#  \t\t  Title\n"
+		"##\t\t Sub title\n"
+		"### Sub sub title\n"
+		"\n"
+		"  \t\t  \n"
+		"\n"
+		" \t\t  Regular text\n"
+		"\n"
+		"=> host1.name/path link description 1 \t\n"
+		"=> host2.name/path  \t\t  \n"
+		"=> host3.name/path\n"
+		"=> host4.name/path 	 link description 4\n"
+		"\n"
+		"*First list item   \n"
+		"*\t\t  Second list item\n"
+		"* Third list item\n"
+		"\n"
+		"Regular text 2\n"
+		"\n"
+		"> Quote text\t  \n"
+		"\n"
+		"``` pre header\t\n"
+		"    pre content   \n"
+		"```\n"
+		"```\n"
+		"    pre content   \n"
+		"```\n"
+		"\n"
+		"End Of Line\n";
+
+	if ((fp = fmemopen(in, strlen(in), "rb")) == NULL)
+		ASSERT(0, "ERR: fmemopen");
+
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<p>20 text/gemini128</p>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<h1>Title</h1>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<h2>Sub title</h2>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<h3>Sub sub title</h3>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<p>Regular text</p>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<ol>\n<li><a href=\"host1.name/path\">");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "link description 1</a></li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<li><a href=\"host2.name/path\">");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "host2.name/path</a></li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<li><a href=\"host3.name/path\">");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "host3.name/path</a></li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<li><a href=\"host4.name/path\">");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "link description 4</a></li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "</ol>\n<ul>\n<li>First list item</li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<li>Second list item</li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<li>Third list item</li>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "</ul>\n<p>Regular text 2</p>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<blockquote>Quote text</blockquote>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<pre>pre header\t\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "    pre content   \n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "</pre>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<pre>    pre content   \n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "</pre>\n");
+	OK(gmip_2html(&ps, bp, 256, fp));
+	STR_EQ(bp, "<p>End Of Line</p>\n");
 }

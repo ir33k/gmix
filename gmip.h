@@ -9,8 +9,9 @@
 
 #define GMIP__URL_MAX       1024+1 /* GMI URL max length */
 #define GMIP__MIN_PREF      5      /* Min prefix size + null */
-#define GMIP__HTML_PAD      46     /* Min padding for HTML tags */
-#define GMIP__MD_PAD        6      /* Min padding for Markdown */
+#define GMIP__2STDOUT_PAD   8      /* Padding for stdout prefixes */
+#define GMIP__2MD_PAD       6      /* Padding for Markdown */
+#define GMIP__2HTML_PAD     46     /* Padding for HTML tags */
 
 /* Line types.  NUL should never be returned.  It's used internally by
  * gmip function.  ALL line types ends with '\n' except for URL and
@@ -71,13 +72,19 @@ enum gmip_lt gmip__lt(char *str, FILE *fp);
  * non 0 value as long as something was parsed. */
 int gmip_get(struct gmip *ps, char *str, size_t siz, FILE *fp);
 
-/* Same as gmip_get except that STR will be filled with strings
- * already parsed to HTML. */
-int gmip_2html(struct gmip *ps, char *str, size_t siz, FILE *fp);
+/* Same as gmip_get except that STR will be filled with strings that
+ * is already prepared to be printed in standard output with new line
+ * characters at the end of each line and line type prefixes.  It
+ * implements the simplest possible way of using gmip_get. */
+int gmip_2stdout(struct gmip *ps, char *str, size_t siz, FILE *fp);
 
 /* Same as gmip_get except that STR will be filled with strings
  * already parsed to Markdown. */
 int gmip_2md(struct gmip *ps, char *str, size_t siz, FILE *fp);
+
+/* Same as gmip_get except that STR will be filled with strings
+ * already parsed to HTML. */
+int gmip_2html(struct gmip *ps, char *str, size_t siz, FILE *fp);
 
 #endif	/* GMIP_H */
 #ifdef GMIP_IMPLEMENTATION
@@ -301,14 +308,106 @@ gmip_get(struct gmip *ps, char *str, size_t siz, FILE *fp)
 }
 
 int
+gmip_2stdout(struct gmip *ps, char *str, size_t siz, FILE *fp)
+{
+	int res;
+
+	/* STR has to be long enough to fit longest stdout prefix. */
+	assert(siz > GMIP__2STDOUT_PAD);
+	res = gmip_get(ps, str, siz-GMIP__2STDOUT_PAD, fp);
+	/* Print line prefix when line starts. */
+	if (ps->beg) {
+		/* Separate prifix from content with tab. */
+		gmip__prepend(str, siz, "\t");
+		/* Print prefix. */
+		switch (ps->new) {
+		case GMIP_NUL: break;
+		case GMIP_H1:  gmip__prepend(str, siz, "h1");  break;
+		case GMIP_H2:  gmip__prepend(str, siz, "h2");  break;
+		case GMIP_H3:  gmip__prepend(str, siz, "h3");  break;
+		case GMIP_P:   gmip__prepend(str, siz, "p");   break;
+		case GMIP_URL: gmip__prepend(str, siz, "url"); break;
+		case GMIP_DSC: gmip__prepend(str, siz, "dsc"); break;
+		case GMIP_LI:  gmip__prepend(str, siz, "li");  break;
+		case GMIP_Q:   gmip__prepend(str, siz, "q");   break;
+		case GMIP_PRE: gmip__prepend(str, siz, "pre"); break;
+		}
+		/* Print last URL as DSC when DSC is empty. */
+		if (ps->new == GMIP_DSC && strlen(str) == 0) {
+			gmip__prepend(str, siz, ps->url);
+		}
+	}
+	/* Put new line on Enf Of Line. */
+	if (ps->eol) {
+		gmip__append(str, siz, "\n");
+	}
+	return res;
+}
+
+int
+gmip_2md(struct gmip *ps, char *str, size_t siz, FILE *fp)
+{
+	int res;
+
+	/* STR has to be long enough to fit longest Markdown syntax
+	 * characters. */
+	assert(siz > GMIP__2MD_PAD);
+	res = gmip_get(ps, str, siz-GMIP__2MD_PAD, fp);
+	/* Avoid printing URL.  URL is printed on DSC from ps->url. */
+	if (ps->new == GMIP_URL) {
+		str[0] = 0;
+	}
+	/* Open line type. */
+	if (ps->beg) {
+		switch (ps->new) {
+		case GMIP_NUL: break;
+		case GMIP_H1:  gmip__prepend(str, siz, "# "); break;
+		case GMIP_H2:  gmip__prepend(str, siz, "## "); break;
+		case GMIP_H3:  gmip__prepend(str, siz, "### "); break;
+		case GMIP_P:   break;
+		case GMIP_URL: break;
+		case GMIP_DSC: gmip__prepend(str, siz, "- ["); break;
+		case GMIP_LI:  gmip__prepend(str, siz, "- "); break;
+		case GMIP_Q:   gmip__prepend(str, siz, "> "); break;
+		case GMIP_PRE: gmip__prepend(str, siz, "```\n"); break;
+		}
+	}
+	/* Add extra empty line after block of links and block of list
+	 * items.  By compering new to old line type we can detect
+	 * changes in line blocks. */
+	if ((ps->new != GMIP_URL && ps->old == GMIP_DSC) ||
+	    (ps->new != GMIP_LI  && ps->old == GMIP_LI)) {
+		gmip__prepend(str, siz, "\n");
+	}
+	if (ps->eol) {
+		if (ps->new == GMIP_DSC) {
+			if (strlen(str) <= 3) {
+				gmip__append(str, siz, ps->url);
+			}
+			gmip__append(str, siz, "](");
+			gmip__append(str, siz, ps->url);
+			gmip__append(str, siz, ")\n");
+		} else if (ps->new == GMIP_PRE) {
+			gmip__append(str, siz, "```\n\n");
+		} else if (ps->new != GMIP_URL) {
+			gmip__append(str, siz, "\n");
+			if (ps->new != GMIP_LI) {
+				gmip__append(str, siz, "\n");
+			}
+		}
+	}
+	return res;
+}
+
+int
 gmip_2html(struct gmip *ps, char *str, size_t siz, FILE *fp)
 {
 	int res;
 
 	/* STR has to be long enough to fit longest HTML tag prefix
 	 * and suffix. */
-	assert(siz > GMIP__HTML_PAD);
-	res = gmip_get(ps, str, siz-GMIP__HTML_PAD, fp);
+	assert(siz > GMIP__2HTML_PAD);
+	res = gmip_get(ps, str, siz-GMIP__2HTML_PAD, fp);
 	/* Open tag when line just started. */
 	if (ps->beg) {
 		/* Open line tag. */
@@ -356,61 +455,6 @@ gmip_2html(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		 * them in the same line. */
 		if (ps->new != GMIP_URL) {
 			gmip__append(str, siz, "\n");
-		}
-	}
-	return res;
-}
-
-int
-gmip_2md(struct gmip *ps, char *str, size_t siz, FILE *fp)
-{
-	int res;
-
-	/* STR has to be long enough to fit longest Markdown syntax
-	 * characters. */
-	assert(siz > GMIP__MD_PAD);
-	res = gmip_get(ps, str, siz-GMIP__MD_PAD, fp);
-	/* Avoid printing URL.  URL is printed on DSC from ps->url. */
-	if (ps->new == GMIP_URL) {
-		str[0] = 0;
-	}
-	/* Open line type. */
-	if (ps->beg) {
-		switch (ps->new) {
-		case GMIP_NUL: break;
-		case GMIP_H1:  gmip__prepend(str, siz, "# "); break;
-		case GMIP_H2:  gmip__prepend(str, siz, "## "); break;
-		case GMIP_H3:  gmip__prepend(str, siz, "### "); break;
-		case GMIP_P:   break;
-		case GMIP_URL: break;
-		case GMIP_DSC: gmip__prepend(str, siz, "- ["); break;
-		case GMIP_LI:  gmip__prepend(str, siz, "- "); break;
-		case GMIP_Q:   gmip__prepend(str, siz, "> "); break;
-		case GMIP_PRE: gmip__prepend(str, siz, "```\n"); break;
-		}
-	}
-	/* Add extra empty line after block of links and block of list
-	 * items.  By compering new to old line type we can detect
-	 * changes in line blocks. */
-	if ((ps->new != GMIP_URL && ps->old == GMIP_DSC) ||
-	    (ps->new != GMIP_LI  && ps->old == GMIP_LI)) {
-		gmip__prepend(str, siz, "\n");
-	}
-	if (ps->eol) {
-		if (ps->new == GMIP_DSC) {
-			if (strlen(str) <= 3) {
-				gmip__append(str, siz, ps->url);
-			}
-			gmip__append(str, siz, "](");
-			gmip__append(str, siz, ps->url);
-			gmip__append(str, siz, ")\n");
-		} else if (ps->new == GMIP_PRE) {
-			gmip__append(str, siz, "```\n\n");
-		} else if (ps->new != GMIP_URL) {
-			gmip__append(str, siz, "\n");
-			if (ps->new != GMIP_LI) {
-				gmip__append(str, siz, "\n");
-			}
 		}
 	}
 	return res;
