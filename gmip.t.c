@@ -519,6 +519,41 @@ TEST("gmip_get: EOF paragraph without last new line character")
 
 	OK(!gmip_get(&ps, bp, 8, fp));
 }
+
+TEST("gmip_get: Make sure paragraph first space is preserved")
+{
+	struct gmip ps = {0}; /* Parse State */
+	char buf[128], *bp = buf;
+	FILE *fp;
+
+	/* There was a bug.  When 4th character in paragraph whas a
+	 * space then it was lost during parsing.  In this example
+	 * space after "am" was removed.  But this was fixed, and this
+	 * test case will make sure it will never happen again. */
+	char *in = "I am the paragraph\n"
+		"\n"
+		"Second paragraph\n";
+
+	if ((fp = fmemopen(in, strlen(in), "rb")) == NULL)
+		ASSERT(0, "ERR: fmemopen");
+
+	OK(gmip_get(&ps, bp, 128, fp));
+	OK(ps.old == 0);
+	OK(ps.new == GMIP_P);
+	OK(ps.beg == 1);
+	OK(ps.eol == '\n');
+	STR_EQ(bp, "I am the paragraph");
+
+	OK(gmip_get(&ps, bp, 128, fp));
+	OK(ps.old == GMIP_P);
+	OK(ps.new == GMIP_P);
+	OK(ps.beg == 1);
+	OK(ps.eol == '\n');
+	STR_EQ(bp, "Second paragraph");
+
+	OK(!gmip_get(&ps, bp, 128, fp));
+}
+
 TEST("gmip_2std")
 {
 	struct gmip ps = {0}; /* Parse State */

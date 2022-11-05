@@ -249,7 +249,8 @@ gmip_get(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		}
 		ps->eol = 0;
 		/* Skip whitespaces. */
-		if ((str[i++] = gmip__fskip(fp, " \t")) == '\n') {
+		if (ps->new != GMIP_P &&
+		    (str[i++] = gmip__fskip(fp, " \t")) == '\n') {
 			if (ps->new == GMIP_PRE) {
 				i = 0;
 			} else {
