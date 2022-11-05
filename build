@@ -8,6 +8,7 @@ LIBSSL="-lssl -lcrypto"
 # Compile and run tests
 $CC $CFLAGS -o gmiu.t   gmiu.t.c   && ./gmiu.t
 $CC $CFLAGS -o gmip.t   gmip.t.c   && ./gmip.t
+$CC $CFLAGS -o gmir.t   gmir.t.c   && ./gmir.t
 
 # Compile programs
 $CC $CFLAGS -o gmiu     gmiu.c

@@ -1,10 +1,31 @@
 /* Parse Gemini response header. */
-
+/*
+ * Gemini response consist of a single CRLF-terminated header line,
+ * optionally followed by a response body.  Response headers:
+ * 
+ *    - Is a two-digit numeric status code.
+ *    - Is a single space character, i.e. the byte 0x20.
+ *    - Is a UTF-8 encoded string of maximum length 1024 bytes,
+ *      whose meaning is dependent.
+ * 
+ * The response header as a whole and as a sub-string both MUST NOT
+ * begin with a U+FEFF byte order mark.
+ * 
+ * If does not belong to the "SUCCESS" range of codes, then the server
+ * MUST close the connection after sending the header and MUST NOT
+ * send a response body.
+ * 
+ * If a server sends a which is not a two-digit number or a which
+ * exceeds 1024 bytes in length, the client SHOULD close the
+ * connection and disregard the response header, informing the user
+ * of an error.
+ */
 #ifndef GMIR_H
 #define GMIR_H
 
-/* Header Response Status Codes.  Some of them uses HTTP status codes
- * as a name because those are very common and easy to understand. */
+#define GMIR_LEN     (2+1+1024) /* Max response header length */
+
+/* Header Response Status Codes. */
 enum gmir_code {
 	GMIR_NUL          =  0, /* Unknown status code */
 	                        /* 1X INPUT */
@@ -32,22 +53,24 @@ enum gmir_code {
 	GMIR_CERT_UNAUTH  = 61, /* Certificate not authorised */
 	GMIR_CERT_INVALID = 62  /* Cerfiticate not valid */
 };
-
-/* Return non 0 value if STR string is response header. */
-int gmir_valid(char *str);
+enum gmir_valid {
+	GMIR_VALID_OK = 0,	/* Response header is valid */
+	GMIR_VALID_LEN,		/* Too long */
+	GMIR_VALID_CODE,	/* Invalid code */
+	GMIR_VALID_CRLF,	/* Missing \r\n at the end */
+	GMIR_VALID_WS		/* Missing space separator */
+};
 
 /* Return enum representation of CODE, default to GMIR_NUL. */
 enum gmir_code gmir_get(int code);
 
+/* Return 0 for STR that is valid response header. */
+enum gmir_valid gmir_valid(char *str);
+
 #endif	/* GMIR_H */
 #ifdef GMIR_IMPLEMENTATION
-
-int
-gmir_valid(char *str)
-{
-	/* TODO(irek): Implement. */
-	return 0;
-}
+#include <stdlib.h>
+#include <string.h>
 
 enum gmir_code
 gmir_get(int code)
@@ -75,6 +98,21 @@ gmir_get(int code)
 		return code;
 	}
 	return GMIR_NUL;
+}
+
+enum gmir_valid
+gmir_valid(char *str)
+{
+	size_t len = strlen(str);
+	char code[3] = "00";
+
+	if (len > GMIR_LEN)        return GMIR_VALID_LEN;
+	if (str[2]     != ' ')     return GMIR_VALID_WS;
+	if (str[len-1] != '\n')    return GMIR_VALID_CRLF;
+	if (str[len-2] != '\r')    return GMIR_VALID_CRLF;
+	strncpy(code, str, 2);
+	if (!gmir_get(atoi(code))) return GMIR_VALID_CODE;
+	return GMIR_VALID_OK;
 }
 
 #endif /* GMIR_IMPLEMENTATION */
