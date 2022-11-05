@@ -163,6 +163,10 @@ gmif_gets(SSL *ssl, char *buf, int siz)
 {
 	int res;		/* Buf size or err code */
 
+	/* TODO(irek): Right now everything is returned in as one
+	 * thing.  But I think it should be separated to response
+	 * header and body.  That is because body could be a non text
+	 * binary data.  This makes it more complicated tho.*/
 	if ((res = SSL_read(ssl, buf, siz)) <= 0) {
 		gmif_end(ssl);
 	}
