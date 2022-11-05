@@ -56,6 +56,7 @@ enum gmir_code {
 enum gmir_valid {
 	GMIR_VALID_OK = 0,	/* Response header is valid */
 	GMIR_VALID_LEN,		/* Too long */
+	GMIR_VALID_FEFF,        /* Forbidden first char U+FEFF */
 	GMIR_VALID_CODE,	/* Invalid code */
 	GMIR_VALID_CRLF,	/* Missing \r\n at the end */
 	GMIR_VALID_WS		/* Missing space separator */
@@ -106,12 +107,25 @@ gmir_valid(char *str)
 	size_t len = strlen(str);
 	char code[3] = "00";
 
-	if (len > GMIR_LEN)        return GMIR_VALID_LEN;
-	if (str[2]     != ' ')     return GMIR_VALID_WS;
-	if (str[len-1] != '\n')    return GMIR_VALID_CRLF;
-	if (str[len-2] != '\r')    return GMIR_VALID_CRLF;
+	if (len > GMIR_LEN) {
+		return GMIR_VALID_LEN;
+	}
+	if (!strncmp(str, "\xFE\xFF", 2)) {
+		return GMIR_VALID_FEFF;
+	}
+	if (str[2] != ' ') {
+		return GMIR_VALID_WS;
+	}
+	if (str[len-1] != '\n') {
+		return GMIR_VALID_CRLF;
+	}
+	if (str[len-2] != '\r') {
+		return GMIR_VALID_CRLF;
+	}
 	strncpy(code, str, 2);
-	if (!gmir_get(atoi(code))) return GMIR_VALID_CODE;
+	if (!gmir_get(atoi(code))) {
+		return GMIR_VALID_CODE;
+	}
 	return GMIR_VALID_OK;
 }
 

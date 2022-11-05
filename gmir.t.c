@@ -45,7 +45,7 @@ TEST("gmir_valid")
 	strcat(str, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	strcat(str, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	strcat(str, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"); /* 254 */
-	/* Just one too much. */
+	/* Just one char too much. */
 	strcat(str, "b");
 	strcat(str, "\r\n");
 
@@ -53,6 +53,7 @@ TEST("gmir_valid")
 	OK(gmir_valid("20 gemini://test\r\n") == GMIR_VALID_OK);
 	/* Invalid. */
 	OK(gmir_valid(str) == GMIR_VALID_LEN);
+	OK(gmir_valid("\xFE\xFF""20 a\r\n") == GMIR_VALID_FEFF);
 	OK(gmir_valid("12 gemini://te\r\n") == GMIR_VALID_CODE);
 	OK(gmir_valid("20 gemini://test\n") == GMIR_VALID_CRLF);
 	OK(gmir_valid("20 gemini://test\r") == GMIR_VALID_CRLF);
