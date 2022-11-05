@@ -1,5 +1,4 @@
 /* Gemini URI parser - parse URL and print all URI parts. */
-
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -8,7 +7,7 @@
 #define GMIU_IMPLEMENTATION
 #include "gmiu.h"
 
-/* Print program usage instruction.  ARGV0 is program name. */
+/* Print program instruction with ARGV0 program name, exit with 1. */
 void usage(char *argv0);
 
 void

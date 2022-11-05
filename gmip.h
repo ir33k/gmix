@@ -332,16 +332,26 @@ gmip_2gmi(struct gmip *ps, char *str, size_t siz, FILE *fp)
 		case GMIP_H3:  gmip__prepend(str, siz, "### "); break;
 		case GMIP_P:   break;
 		case GMIP_URL: gmip__prepend(str, siz, "=> ");  break;
-		case GMIP_DSC: if (strlen(str)) gmip__prepend(str, siz, " "); break;
+		case GMIP_DSC: if (strlen(str)) gmip__prepend(str, siz, "\t"); break;
 		case GMIP_LI:  gmip__prepend(str, siz, "* ");   break;
 		case GMIP_Q:   gmip__prepend(str, siz, "> ");   break;
 		case GMIP_PRE: gmip__prepend(str, siz, "``` ");  break;
 		}
 	}
+	/* Add extra empty line after block of links and block of list
+	 * items.  By compering new to old line type we can detect
+	 * changes in line blocks. */
+	if ((ps->new != GMIP_URL && ps->old == GMIP_DSC) ||
+	    (ps->new != GMIP_LI  && ps->old == GMIP_LI)) {
+		gmip__prepend(str, siz, "\n");
+	}
 	/* Put new line on Enf Of Line. */
 	if (ps->eol && ps->new != GMIP_URL) {
 		if (ps->eol == '`') {
 			gmip__append(str, siz, "```");
+		}
+		if (ps->new != GMIP_DSC && ps->new != GMIP_LI) {
+			gmip__append(str, siz, "\n");
 		}
 		gmip__append(str, siz, "\n");
 	}

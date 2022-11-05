@@ -1,5 +1,4 @@
 /* Parse, create and validate Gemini URI. */
-
 /*
  * URI stands fro "Uniform Resource Identifier".
  * URL stands for "Uniform Resource Locator".
@@ -9,7 +8,6 @@
  * Uri structure which defines all URI parts including normalized URL.
  * When "url" keyword is used it means normalized URI as string.
  */
-
 /*
  * From Gemini protocol specification
  * https://gemini.circumlunar.space/docs/specification.gmi
@@ -36,7 +34,6 @@
  * maximum length 1024 bytes.  The request MUST NOT begin with a
  * U+FEFF byte order mark.
  */
-
 #ifndef GMIU_H
 #define GMIU_H
 #include <stdio.h>
@@ -65,7 +62,6 @@ struct gmiu__sb {
 	char	*_beg;		/* Buffer beggining position*/
 	char	*_end;		/* Current end position */
 };
-
 /* Structure fields are consider read only.  Use gmiu_parse to create
  * URI from URL like string.  Use gmiu_create when you want to set URI
  * parts directly.  Both functions will set all fields. */
@@ -82,12 +78,10 @@ struct gmiu_uri {
 	char	*path;          /* Often empty as root path "/" */
 	char	*qstr;          /* Query string without "?" prefix */
 };
-
 enum gmiu__2url {
 	GMIU__2URL_OK = 0,
 	GMIU__2URL_TOO_LONG     /* URL longer than GMIU_MAX */
 };
-
 enum gmiu_create {
 	GMIU_CREATE_OK = 0,
 	GMIU_CREATE_PROT,       /* Failed on "prot" URI part */
@@ -97,7 +91,6 @@ enum gmiu_create {
 	GMIU_CREATE_QSTR,       /* Failed on "qstr" URI part */
 	GMIU_CREATE_2URL        /* Failed on "url"  URI part */
 };
-
 enum gmiu_parse {
 	GMIU_PARSE_OK = 0,
 	GMIU_PARSE_TOO_LONG	/* URL longer than GMIU_MAX */
@@ -166,15 +159,14 @@ gmiu__sb_addn(struct gmiu__sb *sb, char *src, size_t siz)
 {
 	char   *res;		/* Point at added SRC string */
 
-	if (sb->_max < (gmiu__sb_siz(sb) + siz + 1))
+	if (sb->_max < (gmiu__sb_siz(sb) + siz + 1)) {
 		return NULL;
-
+	}
 	res = sb->_end;
 	strncpy(sb->_end, src, siz);
 	sb->_end += siz;
 	*sb->_end = 0;
 	sb->_end += 1;
-
 	return res;
 }
 
@@ -303,13 +295,6 @@ gmiu_parse(struct gmiu_uri *uri, char *src)
 	}
 	memset(uri, 0, sizeof(struct gmiu_uri));
 	gmiu__sb_init(&sb, uri->_sb, GMIU_BSIZ);
-
-	/* TODO(irek): It looks like right now parsing can fail only
-	 * if URI in BUF is too long.  There are more cases when we
-	 * should return error.  Right now those unhandled cases will
-	 * propagate to later code and probably trigger errors while
-	 * establishing connection or sending message to server.*/
-
 	/* Find query string.  It's easier to start searching for URI
 	 * parts from end of the BP string. */
 	if ((found = strstr(bp, "?")) != NULL) {

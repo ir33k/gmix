@@ -81,29 +81,26 @@ gmif__tcp(char *host, char *port, int *sfd)
 	struct addrinfo hint, *res, *rp;
 
 	memset(&hint, 0, sizeof(hint));
-
 	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_STREAM;
-
 	/* TOOD(irek): If not for potential error in getaddrinfo then
 	 * I could just return int as SFD instead of passing pointer
 	 * to it as third argument. */
-	if ((err = getaddrinfo(host, port, &hint, &res)) != 0)
+	if ((err = getaddrinfo(host, port, &hint, &res)) != 0) {
 		return err;
-
+	}
 	for (rp = res; rp; rp = rp->ai_next) {
 		if ((*sfd = socket(rp->ai_family,
 				   rp->ai_socktype,
-				   rp->ai_protocol)) == -1)
+				   rp->ai_protocol)) == -1) {
 			continue;
-
-		if (connect(*sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+		}
+		if (connect(*sfd, rp->ai_addr, rp->ai_addrlen) != -1) {
 			break;	/* Success */
-
+		}
 		close(*sfd);
 	}
 	freeaddrinfo(res);
-
 	return rp == NULL ? GMIF__TCP_ERR : GMIF__TCP_OK;
 }
 
